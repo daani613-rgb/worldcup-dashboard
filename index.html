@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Prediction Engine</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1d24; --line:#2a2f3a; --txt:#e8eaed; --mut:#9aa0aa;
+    --call:#2ea043; --silent:#6b7280; --home:#3b82f6; --draw:#a855f7; --away:#ef4444;
+    --accent:#2ea043;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.5;padding:16px;max-width:760px;margin:0 auto}
+  header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+  h1{font-size:1.4rem;margin:.2em 0}
+  .sub{color:var(--mut);font-size:.85rem}
+  .fresh{font-size:.8rem;padding:4px 10px;border-radius:6px;background:#13251a;border:1px solid #1e3a28}
+  .fresh.stale{background:#2a1e13;border-color:#3a2a1e;color:#e0b070}
+  .toggle{cursor:pointer;background:var(--card);border:1px solid var(--line);color:var(--txt);
+    border-radius:6px;padding:6px 12px;font-size:.85rem}
+  .banner{background:var(--card);border:1px solid var(--line);border-radius:10px;
+    padding:14px 16px;margin:14px 0;text-align:center}
+  .track{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:14px 0}
+  .track .big{font-size:1.8rem;font-weight:700;color:var(--accent)}
+  .track .n{color:var(--mut);font-size:.85rem}
+  .match{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:10px 0}
+  .match.silent{opacity:.62}
+  .mtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .teams{font-weight:600}
+  .verdict{font-size:.78rem;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .verdict.call{background:#13251a;color:#4ade80;border:1px solid #1e3a28}
+  .verdict.silent{background:#1e2128;color:var(--silent);border:1px solid var(--line)}
+  .bars{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:10px;background:#0c0e12;direction:ltr}
+  .probs{direction:ltr}
+  .bar-h{background:var(--home)} .bar-d{background:var(--draw)} .bar-a{background:var(--away)}
+  .probs{display:flex;justify-content:space-between;font-size:.75rem;color:var(--mut);margin-top:5px}
+  .probs span b{color:var(--txt)}
+  .result{margin-top:8px;font-size:.82rem;padding-top:8px;border-top:1px solid var(--line)}
+  .ok{color:var(--call)} .miss{color:var(--away)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.72rem;color:var(--mut);margin:6px 0 14px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px;vertical-align:middle}
+  footer{color:var(--mut);font-size:.75rem;margin-top:20px;border-top:1px solid var(--line);padding-top:12px}
+  details{margin-top:8px} summary{cursor:pointer;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1 id="title">World Cup 2026 — Prediction Engine</h1>
+    <div class="sub" id="subtitle">Elo + confidence discipline · predictions for clear favorites only</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span class="fresh" id="freshBanner">Last updated: —</span>
+    <button class="toggle" id="langToggle">עב</button>
+  </div>
+</header>
+
+<div class="banner" id="banner"></div>
+
+<div class="track" id="trackPanel"></div>
+
+<div class="legend">
+  <span><i style="background:var(--home)"></i><span id="lgHome">Home win</span></span>
+  <span><i style="background:var(--draw)"></i><span id="lgDraw">Draw</span></span>
+  <span><i style="background:var(--away)"></i><span id="lgAway">Away win</span></span>
+</div>
+
+<div id="matches"></div>
+
+<footer>
+  <details>
+    <summary id="howTitle">How it works</summary>
+    <p id="howText">An international Elo rating predicts each match. The engine "calls" only
+    clear favorites (A+ setups) and stays silent on close games. It is a two-way predictor —
+    a draw is never the single most likely outcome, so it is shown but never the call.
+    Validation is historical (holdout); live track record builds during the tournament.</p>
+  </details>
+</footer>
+
+<script>
+// ====== injected by worldcup_dashboard.py ======
+const FRESH = {"status": "ok", "updated": "2026-06-08 13:40"}; // FRESH_LINE
+const PREDICTIONS = [{"date": "2026-06-11", "home": "Mexico", "away": "South Africa", "ph": 0.832, "pd": 0.114, "pa": 0.054, "fav": "Mexico", "fp": 0.832, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-11", "home": "South Korea", "away": "Czech Republic", "ph": 0.448, "pd": 0.266, "pa": 0.286, "fav": "South Korea", "fp": 0.448, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "Canada", "away": "Bosnia and Herzegovina", "ph": 0.7516592257322054, "pd": 0.17999442741710786, "pa": 0.0683463468506868, "fav": "Canada", "fp": 0.7516592257322054, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "United States", "away": "Paraguay", "ph": 0.386752066207332, "pd": 0.2727093206951027, "pa": 0.34053861309756533, "fav": "United States", "fp": 0.386752066207332, "verdict": "silent", "result": "", "correct": ""}]; // PREDICTIONS_LINE
+const TRACK = {"calls_decided": 0, "calls_correct": 0, "silences": 1, "pending": 1}; // TRACK_LINE
+const TOURNAMENT_STARTED = false; // STARTED_LINE
+// ================================================
+
+const I18N = {
+  en:{title:"World Cup 2026 — Prediction Engine",
+      subtitle:"Elo + confidence discipline · predictions for clear favorites only",
+      fresh:"Last updated: ", stale:"⚠ Update failed — showing data from ",
+      lgHome:"Home win", lgDraw:"Draw", lgAway:"Away win",
+      call:"CALL", silent:"too close — silent",
+      home:"Home", draw:"Draw", away:"Away",
+      trackTitle:"Live track record (decided calls)", of:" of ",
+      silences:" silent (not scored)", pending:" calls awaiting result",
+      noTrack:"No calls decided yet — the record builds as matches finish.",
+      bannerPre:"The tournament begins June 11. Opening predictions below.",
+      bannerLive:"Tournament live — predictions update daily.",
+      howTitle:"How it works",
+      howText:"An international Elo rating predicts each match. The engine \"calls\" only clear favorites (A+ setups) and stays silent on close games. It is a two-way predictor — a draw is never the single most likely outcome, so it is shown but never the call. Validation is historical (holdout); live track record builds during the tournament.",
+      result:"Result: ", correct:"✓ call correct", wrong:"✗ call missed", noScore:"(silent — not scored)"},
+  he:{title:"מונדיאל 2026 — מנוע חיזוי",
+      subtitle:"Elo + משמעת ביטחון · קריאות רק על פייבוריט ברור",
+      fresh:"עודכן לאחרונה: ", stale:"⚠ העדכון נכשל — מוצגים נתונים מ-",
+      lgHome:"ניצחון בית", lgDraw:"תיקו", lgAway:"ניצחון חוץ",
+      call:"קריאה", silent:"צמוד — שתיקה",
+      home:"בית", draw:"תיקו", away:"חוץ",
+      trackTitle:"Track record חי (קריאות שהוכרעו)", of:" מתוך ",
+      silences:" שתיקות (לא נספרות)", pending:" קריאות ממתינות לתוצאה",
+      noTrack:"עדיין אין קריאות שהוכרעו — הרשומה נבנית ככל שמשחקים נגמרים.",
+      bannerPre:"הטורניר מתחיל ב-11 ביוני. ניבויי הפתיחה למטה.",
+      bannerLive:"הטורניר חי — הניבויים מתעדכנים מדי יום.",
+      howTitle:"איך זה עובד",
+      howText:"דירוג Elo בינלאומי מנבא כל משחק. המנוע \"קורא\" רק פייבוריטים ברורים (סטאפ A+) ושותק על משחקים צמודים. זהו מנבא 2-דרכי — תיקו אף פעם אינו התוצאה הכי סבירה, אז הוא מוצג אך לעולם לא הקריאה. האימות היסטורי (הולד-אאוט); ה-track record החי נבנה במהלך הטורניר.",
+      result:"תוצאה: ", correct:"✓ הקריאה צדקה", wrong:"✗ הקריאה פספסה", noScore:"(שתיקה — לא נספר)"}
+};
+
+let lang = "en";
+function t(k){return I18N[lang][k]}
+function pct(x){return Math.round(x*100)+"%"}
+
+function render(){
+  const L = I18N[lang];
+  document.documentElement.lang = lang;
+  document.documentElement.dir = (lang==="he") ? "rtl" : "ltr";
+  document.getElementById("title").textContent = L.title;
+  document.getElementById("subtitle").textContent = L.subtitle;
+  document.getElementById("langToggle").textContent = (lang==="en") ? "עב" : "EN";
+  document.getElementById("lgHome").textContent = L.lgHome;
+  document.getElementById("lgDraw").textContent = L.lgDraw;
+  document.getElementById("lgAway").textContent = L.lgAway;
+  document.getElementById("howTitle").textContent = L.howTitle;
+  document.getElementById("howText").textContent = L.howText;
+
+  // freshness banner
+  const fb = document.getElementById("freshBanner");
+  if(FRESH.status==="stale"){ fb.className="fresh stale"; fb.textContent = L.stale + FRESH.updated; }
+  else { fb.className="fresh"; fb.textContent = L.fresh + FRESH.updated; }
+
+  // pre/live banner
+  document.getElementById("banner").textContent = TOURNAMENT_STARTED ? L.bannerLive : L.bannerPre;
+
+  // track record (calls only, with n; never cherry-picked)
+  const tp = document.getElementById("trackPanel");
+  if(TRACK.calls_decided>0){
+    const acc = Math.round(TRACK.calls_correct/TRACK.calls_decided*100);
+    tp.innerHTML = `<div>${L.trackTitle}</div>
+      <div class="big">${acc}%</div>
+      <div class="n">${TRACK.calls_correct}${L.of}${TRACK.calls_decided}` +
+      ` · ${TRACK.silences}${L.silences} · ${TRACK.pending}${L.pending}</div>`;
+  } else {
+    tp.innerHTML = `<div>${L.trackTitle}</div><div class="n">${L.noTrack}</div>`;
+  }
+
+  // matches
+  const box = document.getElementById("matches");
+  box.innerHTML = "";
+  PREDICTIONS.forEach(p=>{
+    const isCall = (p.verdict==="call");
+    const div = document.createElement("div");
+    div.className = "match" + (isCall ? "" : " silent");
+    let resultHtml = "";
+    if(p.result){
+      let cls="", label="";
+      if(!isCall){ cls=""; label=L.noScore; }
+      else if(p.correct==="1"){ cls="ok"; label=L.correct; }
+      else { cls="miss"; label=L.wrong; }
+      resultHtml = `<div class="result"><span class="${cls}">${L.result}${p.result} ${label}</span></div>`;
+    }
+    div.innerHTML = `
+      <div class="mtop">
+        <span class="teams">${p.home} <span style="color:var(--mut)">–</span> ${p.away}</span>
+        <span class="verdict ${isCall?'call':'silent'}">${isCall ? (p.fav+" "+pct(p.fp)) : L.silent}</span>
+      </div>
+      <div class="bars">
+        <div class="bar-h" style="width:${p.ph*100}%"></div>
+        <div class="bar-d" style="width:${p.pd*100}%"></div>
+        <div class="bar-a" style="width:${p.pa*100}%"></div>
+      </div>
+      <div class="probs">
+        <span>${L.home} <b>${pct(p.ph)}</b></span>
+        <span>${L.draw} <b>${pct(p.pd)}</b></span>
+        <span>${L.away} <b>${pct(p.pa)}</b></span>
+      </div>
+      ${resultHtml}`;
+    box.appendChild(div);
+  });
+}
+
+document.getElementById("langToggle").addEventListener("click",()=>{
+  lang = (lang==="en") ? "he" : "en"; render();
+});
+render();
+</script>
+</body>
+</html>
