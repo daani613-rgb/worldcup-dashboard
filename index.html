@@ -118,7 +118,7 @@
 
 <script>
 // ====== injected by worldcup_dashboard.py ======
-const FRESH = {"status": "ok", "updated": "2026-06-10 19:24"}; // FRESH_LINE
+const FRESH = {"status": "ok", "updated": "2026-06-10 19:59"}; // FRESH_LINE
 const PREDICTIONS = [{"date": "2026-06-11", "home": "Mexico", "away": "South Africa", "ph": 0.832, "pd": 0.114, "pa": 0.054, "fav": "Mexico", "fp": 0.832, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-11", "home": "South Korea", "away": "Czech Republic", "ph": 0.448, "pd": 0.266, "pa": 0.286, "fav": "South Korea", "fp": 0.448, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "Canada", "away": "Bosnia and Herzegovina", "ph": 0.7516842945939627, "pd": 0.1799442896935933, "pa": 0.06837141571244405, "fav": "Canada", "fp": 0.7516842945939627, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "United States", "away": "Paraguay", "ph": 0.3867655280160345, "pd": 0.2726823970776977, "pa": 0.3405520749062678, "fav": "United States", "fp": 0.3867655280160345, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Qatar", "away": "Switzerland", "ph": 0.07831279134363221, "pd": 0.13463131731565867, "pa": 0.7870558913407092, "fav": "Switzerland", "fp": 0.7870558913407092, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Brazil", "away": "Morocco", "ph": 0.49325019394625785, "pd": 0.2658387707850979, "pa": 0.24091103526864427, "fav": "Brazil", "fp": 0.49325019394625785, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Haiti", "away": "Scotland", "ph": 0.23806748233027414, "pd": 0.2658387707850979, "pa": 0.496093746884628, "fav": "Scotland", "fp": 0.496093746884628, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Australia", "away": "Turkey", "ph": 0.2692884108553213, "pd": 0.2658387707850979, "pa": 0.4648728183595808, "fav": "Turkey", "fp": 0.4648728183595808, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Germany", "away": "Curaçao", "ph": 0.8491274557998574, "pd": 0.11432325886990802, "pa": 0.03654928533023455, "fav": "Germany", "fp": 0.8491274557998574, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Ivory Coast", "away": "Ecuador", "ph": 0.18061867315070787, "pd": 0.22679455445544555, "pa": 0.5925867723938466, "fav": "Ecuador", "fp": 0.5925867723938466, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Netherlands", "away": "Japan", "ph": 0.36925292325841497, "pd": 0.2726823970776977, "pa": 0.35806467966388733, "fav": "Netherlands", "fp": 0.36925292325841497, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Sweden", "away": "Tunisia", "ph": 0.4121421379379967, "pd": 0.2726823970776977, "pa": 0.3151754649843056, "fav": "Sweden", "fp": 0.4121421379379967, "verdict": "silent", "result": "", "correct": ""}]; // PREDICTIONS_LINE
 const TRACK = {"calls_decided": 0, "calls_correct": 0, "silences": 1, "pending": 1}; // TRACK_LINE
 const TOURNAMENT_STARTED = false; // STARTED_LINE
@@ -155,7 +155,8 @@ const I18N = {
       howCaveat:"These predictions were tested against plain logic ('the stronger team wins'), NOT against bookmaker odds. This is a tool to spot potential — not a promise of easy money.",
       result:"Result: ", correct:"✓ call correct", wrong:"✗ call missed", noScore:"(silent — not scored)",
       surpriseTitle:"🔥 Surprise alerts", surpriseSub:"Clear favorite vs a hot outsider — upset odds roughly double. Not a prediction of a win.",
-      surpriseFav:"Favorite", surpriseDog:"Hot outsider", surpriseDone:"Materialized",
+      surpriseFav:"Favorite", surpriseDog:"Hot outsider", surpriseDone:"Surprise alerts that came true so far",
+      surpriseDoneCount:"{hit} of {total}", surpriseDoneEarly:"Still early — the record builds over the tournament.",
       surpriseFlag:"🔥 Upset potential", surpriseExpLabel:"Breakdown by the surprise factor",
       skipToMatches:"The standard forecast for all matches ↓",
       surpriseHeadline:"🔥 Surprise factor: {dog}'s chance to win rises to",
@@ -196,7 +197,8 @@ const I18N = {
       howCaveat:"התחזיות נבדקו מול ההיגיון הפשוט ('הקבוצה החזקה מנצחת'), ולא מול קווי ההימור של המהמרים. זה כלי לזהות פוטנציאל — לא הבטחה לכסף קל.",
       result:"תוצאה: ", correct:"✓ הקריאה צדקה", wrong:"✗ הקריאה פספסה", noScore:"(שתיקה — לא נספר)",
       surpriseTitle:"🔥 התראות הפתעה", surpriseSub:"פייבוריט ברור מול מאאוטסיידר חם — סיכוי ההפתעה כמעט מוכפל. לא נבואת ניצחון.",
-      surpriseFav:"פייבוריט", surpriseDog:"מאאוטסיידר חם", surpriseDone:"התממשו",
+      surpriseFav:"פייבוריט", surpriseDog:"מאאוטסיידר חם", surpriseDone:"התראות הפתעה שהתממשו עד כה",
+      surpriseDoneCount:"{hit} מתוך {total}", surpriseDoneEarly:"עדיין מוקדם — הרשומה נבנית לאורך הטורניר.",
       surpriseFlag:"🔥 פוטנציאל הפתעה", surpriseExpLabel:"החלוקה לפי גורם ההפתעה",
       skipToMatches:"התחזית הרגילה לכל המשחקים ↓",
       surpriseHeadline:"🔥 גורם ההפתעה: הסיכוי ש{dog} תנצח עולה ל-",
@@ -297,8 +299,13 @@ function render(){
         `${cav}</div>`;
     });
     const sDone=(SURPRISE.completed||[]).filter(m=>m.surprise);
-    if(sDone.length){ const hit=sDone.filter(m=>m.upset).length;
-      h += `<div style="font-size:.84rem;color:var(--mut);margin-top:6px">${L.surpriseDone}: ${hit}/${sDone.length}</div>`; }
+    if(sDone.length){
+      const hit=sDone.filter(m=>m.upset).length;
+      const total=sDone.length;
+      h += `<div style="font-size:.84rem;color:var(--mut);margin-top:6px">${L.surpriseDone}</div>`+
+           `<div style="font-size:.84rem;color:var(--txt)">${L.surpriseDoneCount.replace("{hit}",hit).replace("{total}",total)}</div>`;
+      if(total<5){ h += `<div style="font-size:.76rem;color:var(--mut);margin-top:2px">${L.surpriseDoneEarly}</div>`; }
+    }
     sp2.innerHTML = h;
   } else { sp2.innerHTML = ""; }
 
