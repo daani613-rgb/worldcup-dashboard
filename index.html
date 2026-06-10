@@ -17,6 +17,15 @@
   header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
   h1{font-size:1.4rem;margin:.2em 0}
   .sub{color:var(--mut);font-size:.85rem}
+  .howto-hint{margin-top:6px;background:transparent;border:1px solid var(--line);color:var(--mut);
+    font-size:.8rem;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:inherit}
+  .howto-hint:hover{color:var(--txt);border-color:var(--mut)}
+  .howto-body{display:flex;flex-direction:column;gap:2px}
+  .howto-h{font-size:.9rem;font-weight:600;color:var(--txt);margin:12px 0 2px}
+  .howto-p{font-size:.85rem;color:var(--mut);line-height:1.5;margin:0}
+  .howto-note{font-size:.85rem;color:var(--txt);line-height:1.5;background:var(--card,#171b22);
+    border:1px solid var(--line);border-radius:8px;padding:10px;margin:8px 0}
+  .howto-warn{color:#f0a020}
   .fresh{font-size:.8rem;padding:4px 10px;border-radius:6px;background:#13251a;border:1px solid #1e3a28}
   .fresh.stale{background:#2a1e13;border-color:#3a2a1e;color:#e0b070}
   .toggle{cursor:pointer;background:var(--card);border:1px solid var(--line);color:var(--txt);
@@ -51,6 +60,7 @@
   <div>
     <h1 id="title">World Cup 2026 — Prediction Engine</h1>
     <div class="sub" id="subtitle">Elo + confidence discipline · predictions for clear favorites only</div>
+    <button id="howtoHint" class="howto-hint" onclick="openHowto()"></button>
   </div>
   <div style="display:flex;gap:8px;align-items:center">
     <span class="fresh" id="freshBanner">Last updated: —</span>
@@ -73,18 +83,29 @@
 <div id="matches"></div>
 
 <footer>
-  <details>
-    <summary id="howTitle">How it works</summary>
-    <p id="howText">An international Elo rating predicts each match. The engine "calls" only
-    clear favorites (A+ setups) and stays silent on close games. It is a two-way predictor —
-    a draw is never the single most likely outcome, so it is shown but never the call.
-    Validation is historical (holdout); live track record builds during the tournament.</p>
+  <details id="howto">
+    <summary id="howTitle">How to read this page</summary>
+    <div class="howto-body">
+      <h3 class="howto-h" id="howFavTitle"></h3>
+      <p class="howto-p" id="howFav"></p>
+      <h3 class="howto-h" id="howAplusTitle"></h3>
+      <p class="howto-p" id="howAplus"></p>
+      <h3 class="howto-h" id="howSilentTitle"></h3>
+      <p class="howto-p" id="howSilent"></p>
+      <h3 class="howto-h" id="howSurpriseTitle"></h3>
+      <p class="howto-p" id="howSurprise"></p>
+      <div class="howto-note" id="howSurpriseNot"></div>
+      <h3 class="howto-h" id="howEvidenceTitle"></h3>
+      <p class="howto-p" id="howEvidence"></p>
+      <h3 class="howto-h howto-warn" id="howCaveatTitle"></h3>
+      <p class="howto-p" id="howCaveat"></p>
+    </div>
   </details>
 </footer>
 
 <script>
 // ====== injected by worldcup_dashboard.py ======
-const FRESH = {"status": "ok", "updated": "2026-06-10 00:02"}; // FRESH_LINE
+const FRESH = {"status": "ok", "updated": "2026-06-10 04:15"}; // FRESH_LINE
 const PREDICTIONS = [{"date": "2026-06-11", "home": "Mexico", "away": "South Africa", "ph": 0.832, "pd": 0.114, "pa": 0.054, "fav": "Mexico", "fp": 0.832, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-11", "home": "South Korea", "away": "Czech Republic", "ph": 0.448, "pd": 0.266, "pa": 0.286, "fav": "South Korea", "fp": 0.448, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "Canada", "away": "Bosnia and Herzegovina", "ph": 0.7516842945939627, "pd": 0.1799442896935933, "pa": 0.06837141571244405, "fav": "Canada", "fp": 0.7516842945939627, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "United States", "away": "Paraguay", "ph": 0.3867655280160345, "pd": 0.2726823970776977, "pa": 0.3405520749062678, "fav": "United States", "fp": 0.3867655280160345, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Qatar", "away": "Switzerland", "ph": 0.07831279134363221, "pd": 0.13463131731565867, "pa": 0.7870558913407092, "fav": "Switzerland", "fp": 0.7870558913407092, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Brazil", "away": "Morocco", "ph": 0.49325019394625785, "pd": 0.2658387707850979, "pa": 0.24091103526864427, "fav": "Brazil", "fp": 0.49325019394625785, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Haiti", "away": "Scotland", "ph": 0.23806748233027414, "pd": 0.2658387707850979, "pa": 0.496093746884628, "fav": "Scotland", "fp": 0.496093746884628, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Australia", "away": "Turkey", "ph": 0.2692884108553213, "pd": 0.2658387707850979, "pa": 0.4648728183595808, "fav": "Turkey", "fp": 0.4648728183595808, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Germany", "away": "Curaçao", "ph": 0.8491274557998574, "pd": 0.11432325886990802, "pa": 0.03654928533023455, "fav": "Germany", "fp": 0.8491274557998574, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Ivory Coast", "away": "Ecuador", "ph": 0.18061867315070787, "pd": 0.22679455445544555, "pa": 0.5925867723938466, "fav": "Ecuador", "fp": 0.5925867723938466, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Netherlands", "away": "Japan", "ph": 0.36925292325841497, "pd": 0.2726823970776977, "pa": 0.35806467966388733, "fav": "Netherlands", "fp": 0.36925292325841497, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Sweden", "away": "Tunisia", "ph": 0.4121421379379967, "pd": 0.2726823970776977, "pa": 0.3151754649843056, "fav": "Sweden", "fp": 0.4121421379379967, "verdict": "silent", "result": "", "correct": ""}]; // PREDICTIONS_LINE
 const TRACK = {"calls_decided": 0, "calls_correct": 0, "silences": 1, "pending": 1}; // TRACK_LINE
 const TOURNAMENT_STARTED = false; // STARTED_LINE
@@ -103,8 +124,21 @@ const I18N = {
       noTrack:"No calls decided yet — the record builds as matches finish.",
       bannerPre:"The tournament begins June 11. Opening predictions below.",
       bannerLive:"Tournament live — predictions update daily.",
-      howTitle:"How it works",
-      howText:"An international Elo rating predicts each match. The engine \"calls\" only clear favorites (A+ setups) and stays silent on close games. It is a two-way predictor — a draw is never the single most likely outcome, so it is shown but never the call. Validation is historical (holdout); live track record builds during the tournament.",
+      howtoHint:"New here? How to read this page →",
+      howTitle:"How to read this page",
+      howFavTitle:"Favorite vs Outsider",
+      howFav:"In each match, the favorite is the higher-rated team and the outsider is the lower-rated one.",
+      howAplusTitle:"A+ call",
+      howAplus:"The engine marks A+ only when it is very confident in the favorite. You can see how these calls play out in the live track record above.",
+      howSilentTitle:"Why it stays silent",
+      howSilent:"When two teams are close, the engine makes no call — it only speaks when confident.",
+      howSurpriseTitle:"🔥 Surprise flag",
+      howSurprise:"Lights up when the outsider is 'hot' — it recently won by a wide margin against strong teams. That's a sign of real form the rating hasn't caught yet. When the flag is on, upset odds roughly double — the exact percentage appears on each alert, because it depends on the gap between the teams.",
+      howSurpriseNot:"Important — what the flag does NOT mean: it does not mean the weaker team will win. Even with the flag, the favorite still wins about 3 out of 4 times. It only means the chance is higher than it first looks.",
+      howEvidenceTitle:"Evidence basis (High / Medium / Low)",
+      howEvidence:"How much data backs the alert. High = more quality matches were checked. It's not a confidence percentage, just the depth of evidence.",
+      howCaveatTitle:"Important caveat",
+      howCaveat:"These predictions were tested against plain logic ('the stronger team wins'), NOT against bookmaker odds. This is a tool to spot potential — not a promise of easy money.",
       result:"Result: ", correct:"✓ call correct", wrong:"✗ call missed", noScore:"(silent — not scored)",
       surpriseTitle:"🔥 Surprise alerts", surpriseSub:"Clear favorite vs a hot outsider — upset odds roughly double. Not a prediction of a win.",
       surpriseFav:"Favorite", surpriseDog:"Hot outsider", surpriseEvidence:"Evidence",
@@ -122,8 +156,21 @@ const I18N = {
       noTrack:"עדיין אין קריאות שהוכרעו — הרשומה נבנית ככל שמשחקים נגמרים.",
       bannerPre:"הטורניר מתחיל ב-11 ביוני. ניבויי הפתיחה למטה.",
       bannerLive:"הטורניר חי — הניבויים מתעדכנים מדי יום.",
-      howTitle:"איך זה עובד",
-      howText:"דירוג Elo בינלאומי מנבא כל משחק. המנוע \"קורא\" רק פייבוריטים ברורים (סטאפ A+) ושותק על משחקים צמודים. זהו מנבא 2-דרכי — תיקו אף פעם אינו התוצאה הכי סבירה, אז הוא מוצג אך לעולם לא הקריאה. האימות היסטורי (הולד-אאוט); ה-track record החי נבנה במהלך הטורניר.",
+      howtoHint:"חדש כאן? איך לקרוא את הדף ←",
+      howTitle:"איך לקרוא את הדף",
+      howFavTitle:"פייבוריט מול מאאוטסיידר",
+      howFav:"בכל משחק, הפייבוריט הוא הקבוצה החזקה יותר לפי הדירוג, והמאאוטסיידר היא החלשה יותר.",
+      howAplusTitle:"קריאת A+",
+      howAplus:"המנוע מסמן A+ רק כשהוא בטוח מאוד בפייבוריט. אפשר לראות בלוח ה-track record למעלה איך הקריאות האלה מסתדרות בפועל.",
+      howSilentTitle:"למה הוא שותק לפעמים",
+      howSilent:"כששתי קבוצות צמודות, המנוע לא נותן קריאה — הוא מדבר רק כשהוא בטוח.",
+      howSurpriseTitle:"🔥 דגל הפתעה",
+      howSurprise:"נדלק כשהמאאוטסיידר 'חם' — ניצח לאחרונה בהפרש גדול מול קבוצות חזקות. זה סימן לכושר אמיתי שהדירוג עדיין לא תפס. כשהדגל נדלק, סיכוי ההפתעה כמעט מוכפל — והאחוז המדויק מופיע בכל התראה, כי הוא תלוי בפער בין הקבוצות.",
+      howSurpriseNot:"חשוב — מה הדגל לא אומר: הוא לא אומר שהקבוצה החלשה תנצח. גם כשהדגל נדלק, הפייבוריט עדיין מנצח בערך 3 מתוך 4 פעמים. הוא אומר רק שהסיכוי גבוה יותר ממה שנראה במבט ראשון.",
+      howEvidenceTitle:"ביסוס ראיות (גבוה / בינוני / נמוך)",
+      howEvidence:"כמה נתונים עומדים מאחורי ההתראה. גבוה = יותר משחקי-איכות נבדקו. זה לא אחוז-ביטחון, רק עומק הראיות.",
+      howCaveatTitle:"סייג חשוב",
+      howCaveat:"התחזיות נבדקו מול ההיגיון הפשוט ('הקבוצה החזקה מנצחת'), ולא מול קווי ההימור של המהמרים. זה כלי לזהות פוטנציאל — לא הבטחה לכסף קל.",
       result:"תוצאה: ", correct:"✓ הקריאה צדקה", wrong:"✗ הקריאה פספסה", noScore:"(שתיקה — לא נספר)",
       surpriseTitle:"🔥 התראות הפתעה", surpriseSub:"פייבוריט ברור מול מאאוטסיידר חם — סיכוי ההפתעה כמעט מוכפל. לא נבואת ניצחון.",
       surpriseFav:"פייבוריט", surpriseDog:"מאאוטסיידר חם", surpriseEvidence:"ביסוס ראיות",
@@ -142,12 +189,17 @@ function render(){
   document.documentElement.dir = (lang==="he") ? "rtl" : "ltr";
   document.getElementById("title").textContent = L.title;
   document.getElementById("subtitle").textContent = L.subtitle;
+  document.getElementById("howtoHint").textContent = L.howtoHint;
   document.getElementById("langToggle").textContent = (lang==="en") ? "עב" : "EN";
   document.getElementById("lgHome").textContent = L.lgHome;
   document.getElementById("lgDraw").textContent = L.lgDraw;
   document.getElementById("lgAway").textContent = L.lgAway;
   document.getElementById("howTitle").textContent = L.howTitle;
-  document.getElementById("howText").textContent = L.howText;
+  ["howFavTitle","howFav","howAplusTitle","howAplus","howSilentTitle","howSilent",
+   "howSurpriseTitle","howSurprise","howSurpriseNot","howEvidenceTitle","howEvidence",
+   "howCaveatTitle","howCaveat"].forEach(k=>{
+    const el = document.getElementById(k); if(el) el.textContent = L[k];
+  });
 
   // freshness banner
   const fb = document.getElementById("freshBanner");
@@ -226,6 +278,11 @@ function render(){
       ${resultHtml}`;
     box.appendChild(div);
   });
+}
+
+function openHowto(){
+  var d = document.getElementById('howto');
+  if(d){ d.open = true; d.scrollIntoView({behavior:'smooth', block:'start'}); }
 }
 
 document.getElementById("langToggle").addEventListener("click",()=>{
