@@ -41,12 +41,22 @@
   .match.silent{opacity:.62}
   .mtop{display:flex;justify-content:space-between;align-items:center;gap:10px}
   .teams{font-weight:600}
+  .mdate{font-size:.76rem;color:var(--txt);opacity:.7;margin-bottom:4px}
+  #matchesHead{margin-top:28px;border-top:1px solid var(--line);padding-top:18px}
   .verdict{font-size:.78rem;padding:3px 9px;border-radius:20px;white-space:nowrap}
   .verdict.call{background:#13251a;color:#4ade80;border:1px solid #1e3a28}
   .verdict.silent{background:#1e2128;color:var(--silent);border:1px solid var(--line)}
   .bars{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:10px;background:#0c0e12;direction:ltr}
   .probs{direction:ltr}
   .bar-h{background:var(--home)} .bar-d{background:var(--draw)} .bar-a{background:var(--away)}
+  .scard{border:1px solid var(--line);border-radius:8px;padding:12px;margin:8px 0;background:#1a1410}
+  .sbar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:8px 0 4px;background:#0c0e12;direction:ltr}
+  .so{background:#f0a020} .sd{background:var(--draw)} .sf{background:var(--mut)}
+  .slbl{display:flex;justify-content:space-between;font-size:.72rem;color:var(--mut)}
+  .sbox{border:1px solid #4a3a1e;background:#160f08;border-radius:8px;padding:12px;margin:9px 0;text-align:center}
+  .sbig{font-size:2rem;font-weight:700;color:#f0a020;line-height:1.1}
+  .srow{display:flex;justify-content:space-between;font-size:.78rem;margin:5px 0 2px}
+  .smini{height:7px;border-radius:4px;background:#0c0e12;overflow:hidden;direction:ltr}
   .probs{display:flex;justify-content:space-between;font-size:.75rem;color:var(--mut);margin-top:5px}
   .probs span b{color:var(--txt)}
   .result{margin-top:8px;font-size:.82rem;padding-top:8px;border-top:1px solid var(--line)}
@@ -74,7 +84,7 @@
 
 <div class="track" id="trackPanel" role="status"></div>
 
-<div id="surprisePanel"></div>
+<div id="surprisePanel" role="status"></div>
 
 <h2 class="secth" id="matchesHead">Today's matches</h2>
 <div class="legend">
@@ -108,7 +118,7 @@
 
 <script>
 // ====== injected by worldcup_dashboard.py ======
-const FRESH = {"status": "ok", "updated": "2026-06-10 12:53"}; // FRESH_LINE
+const FRESH = {"status": "ok", "updated": "2026-06-10 19:24"}; // FRESH_LINE
 const PREDICTIONS = [{"date": "2026-06-11", "home": "Mexico", "away": "South Africa", "ph": 0.832, "pd": 0.114, "pa": 0.054, "fav": "Mexico", "fp": 0.832, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-11", "home": "South Korea", "away": "Czech Republic", "ph": 0.448, "pd": 0.266, "pa": 0.286, "fav": "South Korea", "fp": 0.448, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "Canada", "away": "Bosnia and Herzegovina", "ph": 0.7516842945939627, "pd": 0.1799442896935933, "pa": 0.06837141571244405, "fav": "Canada", "fp": 0.7516842945939627, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-12", "home": "United States", "away": "Paraguay", "ph": 0.3867655280160345, "pd": 0.2726823970776977, "pa": 0.3405520749062678, "fav": "United States", "fp": 0.3867655280160345, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Qatar", "away": "Switzerland", "ph": 0.07831279134363221, "pd": 0.13463131731565867, "pa": 0.7870558913407092, "fav": "Switzerland", "fp": 0.7870558913407092, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Brazil", "away": "Morocco", "ph": 0.49325019394625785, "pd": 0.2658387707850979, "pa": 0.24091103526864427, "fav": "Brazil", "fp": 0.49325019394625785, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Haiti", "away": "Scotland", "ph": 0.23806748233027414, "pd": 0.2658387707850979, "pa": 0.496093746884628, "fav": "Scotland", "fp": 0.496093746884628, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-13", "home": "Australia", "away": "Turkey", "ph": 0.2692884108553213, "pd": 0.2658387707850979, "pa": 0.4648728183595808, "fav": "Turkey", "fp": 0.4648728183595808, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Germany", "away": "Curaçao", "ph": 0.8491274557998574, "pd": 0.11432325886990802, "pa": 0.03654928533023455, "fav": "Germany", "fp": 0.8491274557998574, "verdict": "call", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Ivory Coast", "away": "Ecuador", "ph": 0.18061867315070787, "pd": 0.22679455445544555, "pa": 0.5925867723938466, "fav": "Ecuador", "fp": 0.5925867723938466, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Netherlands", "away": "Japan", "ph": 0.36925292325841497, "pd": 0.2726823970776977, "pa": 0.35806467966388733, "fav": "Netherlands", "fp": 0.36925292325841497, "verdict": "silent", "result": "", "correct": ""}, {"date": "2026-06-14", "home": "Sweden", "away": "Tunisia", "ph": 0.4121421379379967, "pd": 0.2726823970776977, "pa": 0.3151754649843056, "fav": "Sweden", "fp": 0.4121421379379967, "verdict": "silent", "result": "", "correct": ""}]; // PREDICTIONS_LINE
 const TRACK = {"calls_decided": 0, "calls_correct": 0, "silences": 1, "pending": 1}; // TRACK_LINE
 const TOURNAMENT_STARTED = false; // STARTED_LINE
@@ -137,7 +147,7 @@ const I18N = {
       howSilentTitle:"Why it stays silent",
       howSilent:"When two teams are close, the engine makes no call — it only speaks when confident.",
       howSurpriseTitle:"🔥 Surprise flag",
-      howSurprise:"Lights up when the outsider is 'hot' — it recently won by a wide margin against strong teams. That's a sign of real form the rating hasn't caught yet. When the flag is on, upset odds roughly double — the exact percentage appears on each alert, because it depends on the gap between the teams.",
+      howSurprise:"Lights up when the outsider is 'hot' — it recently beat strong teams by a wide margin, a sign of real form the rating hasn't caught yet. Each flagged match gets a 'surprise factor' card. The key number: among similar underdogs in the past, the plain ones won about 12% of the time, but the hot ones won about 22% — the same kind of underdog, with the flag versus without. The card also shows the chance the outsider 'doesn't lose' — meaning a win OR a draw. The exact percentages depend on how far apart the two teams are.",
       howSurpriseNot:"Important — what the flag does NOT mean: it does not mean the weaker team will win. Even with the flag, the favorite still wins about 3 out of 4 times. It only means the chance is higher than it first looks.",
       howEvidenceTitle:"Evidence basis (High / Medium / Low)",
       howEvidence:"How much data backs the alert. High = more quality matches were checked. It's not a confidence percentage, just the depth of evidence.",
@@ -145,8 +155,16 @@ const I18N = {
       howCaveat:"These predictions were tested against plain logic ('the stronger team wins'), NOT against bookmaker odds. This is a tool to spot potential — not a promise of easy money.",
       result:"Result: ", correct:"✓ call correct", wrong:"✗ call missed", noScore:"(silent — not scored)",
       surpriseTitle:"🔥 Surprise alerts", surpriseSub:"Clear favorite vs a hot outsider — upset odds roughly double. Not a prediction of a win.",
-      surpriseFav:"Favorite", surpriseDog:"Hot outsider", surpriseEvidence:"Evidence",
-      surpriseWin:"Outsider win", surpriseBase:"base", surpriseDone:"Materialized",
+      surpriseFav:"Favorite", surpriseDog:"Hot outsider", surpriseDone:"Materialized",
+      surpriseFlag:"🔥 Upset potential", surpriseExpLabel:"Breakdown by the surprise factor",
+      skipToMatches:"The standard forecast for all matches ↓",
+      surpriseHeadline:"🔥 Surprise factor: {dog}'s chance to win rises to",
+      surpriseRise:"almost {M}× the usual", surpriseRiseFlat:"higher than usual",
+      surpriseUsual:"A typical weaker team", surpriseHot:"{dog} in hot form",
+      surpriseNotlose:"Chance {dog} doesn't lose (win or draw):",
+      surpriseWhy:"Hot form = recently beat strong teams.",
+      surpriseCaveat:"⚠️ A bias flag, not a prophecy — {fav} is still the favorite.",
+      surpriseEvidence:"Based on {n} recent matches against strong teams.",
       evLevels:{high:"High", medium:"Medium", low:"Low"},
       gapNotes:{gap_large:"Very large gap — low reliability", gap_huge:"Huge gap — percentages unreliable"}},
   he:{title:"מונדיאל 2026 — מנוע חיזוי",
@@ -170,7 +188,7 @@ const I18N = {
       howSilentTitle:"למה הוא שותק לפעמים",
       howSilent:"כששתי קבוצות צמודות, המנוע לא נותן קריאה — הוא מדבר רק כשהוא בטוח.",
       howSurpriseTitle:"🔥 דגל הפתעה",
-      howSurprise:"נדלק כשהמאאוטסיידר 'חם' — ניצח לאחרונה בהפרש גדול מול קבוצות חזקות. זה סימן לכושר אמיתי שהדירוג עדיין לא תפס. כשהדגל נדלק, סיכוי ההפתעה כמעט מוכפל — והאחוז המדויק מופיע בכל התראה, כי הוא תלוי בפער בין הקבוצות.",
+      howSurprise:"נדלק כשהמאאוטסיידר 'חם' — ניצח לאחרונה בהפרש גדול מול קבוצות חזקות, סימן לכושר אמיתי שהדירוג עדיין לא תפס. כל משחק מסומן מקבל כרטיס 'גורם ההפתעה'. המספר המרכזי: מבין מאאוטסיידרים דומים בעבר, הרגילים ניצחו בערך 12% מהפעמים, אבל החמים ניצחו בערך 22% — אותו סוג מאאוטסיידר, עם הדגל מול בלעדיו. הכרטיס גם מראה את הסיכוי שהמאאוטסיידר 'לא יפסיד' — כלומר ניצחון או תיקו. האחוזים המדויקים תלויים בגודל הפער בין הקבוצות.",
       howSurpriseNot:"חשוב — מה הדגל לא אומר: הוא לא אומר שהקבוצה החלשה תנצח. גם כשהדגל נדלק, הפייבוריט עדיין מנצח בערך 3 מתוך 4 פעמים. הוא אומר רק שהסיכוי גבוה יותר ממה שנראה במבט ראשון.",
       howEvidenceTitle:"ביסוס ראיות (גבוה / בינוני / נמוך)",
       howEvidence:"כמה נתונים עומדים מאחורי ההתראה. גבוה = יותר משחקי-איכות נבדקו. זה לא אחוז-ביטחון, רק עומק הראיות.",
@@ -178,8 +196,16 @@ const I18N = {
       howCaveat:"התחזיות נבדקו מול ההיגיון הפשוט ('הקבוצה החזקה מנצחת'), ולא מול קווי ההימור של המהמרים. זה כלי לזהות פוטנציאל — לא הבטחה לכסף קל.",
       result:"תוצאה: ", correct:"✓ הקריאה צדקה", wrong:"✗ הקריאה פספסה", noScore:"(שתיקה — לא נספר)",
       surpriseTitle:"🔥 התראות הפתעה", surpriseSub:"פייבוריט ברור מול מאאוטסיידר חם — סיכוי ההפתעה כמעט מוכפל. לא נבואת ניצחון.",
-      surpriseFav:"פייבוריט", surpriseDog:"מאאוטסיידר חם", surpriseEvidence:"ביסוס ראיות",
-      surpriseWin:"ניצחון מאאוטסיידר", surpriseBase:"בסיס", surpriseDone:"התממשו",
+      surpriseFav:"פייבוריט", surpriseDog:"מאאוטסיידר חם", surpriseDone:"התממשו",
+      surpriseFlag:"🔥 פוטנציאל הפתעה", surpriseExpLabel:"החלוקה לפי גורם ההפתעה",
+      skipToMatches:"התחזית הרגילה לכל המשחקים ↓",
+      surpriseHeadline:"🔥 גורם ההפתעה: הסיכוי ש{dog} תנצח עולה ל-",
+      surpriseRise:"כמעט פי {M} מהרגיל", surpriseRiseFlat:"גבוה מהרגיל",
+      surpriseUsual:"קבוצה חלשה רגילה", surpriseHot:"{dog} בכושר חם",
+      surpriseNotlose:"הסיכוי ש{dog} לא תפסיד (ניצחון או תיקו):",
+      surpriseWhy:"כושר חם = ניצחה נבחרות חזקות לאחרונה.",
+      surpriseCaveat:"⚠️ דגל הטיה, לא נבואה — {fav} עדיין המועדפת.",
+      surpriseEvidence:"מבוסס על {n} משחקים אחרונים מול נבחרות חזקות.",
       evLevels:{high:"גבוה", medium:"בינוני", low:"נמוך"},
       gapNotes:{gap_large:"פער גדול מאוד — אמינות נמוכה", gap_huge:"פער עצום — האחוזים לא אמינים"}}
 };
@@ -187,6 +213,8 @@ const I18N = {
 let lang = "en";
 function t(k){return I18N[lang][k]}
 function pct(x){return Math.round(x*100)+"%"}
+function fmtDate(s){ const p=String(s).split("-"); if(p.length!==3) return s;
+  return (lang==="he") ? p[2]+"."+p[1] : p[1]+"."+p[2]; }   // he: 15.06 (יום.חודש) · en: 06.15 (חודש.יום)
 
 function render(){
   const L = I18N[lang];
@@ -232,17 +260,40 @@ function render(){
   const sAlerts = (SURPRISE.upcoming||[]).filter(m=>m.surprise && m.surprise_info);
   if(sAlerts.length){
     let h = `<div style="font-weight:700;margin:14px 0 2px">${L.surpriseTitle}</div>`+
-            `<div style="color:var(--mut);font-size:.82rem;margin-bottom:8px">${L.surpriseSub}</div>`;
+            `<div style="color:var(--mut);font-size:.82rem;margin-bottom:8px">${L.surpriseSub}</div>`+
+            `<button class="howto-hint" style="margin-bottom:8px" onclick="document.getElementById('matchesHead').scrollIntoView({behavior:'smooth',block:'start'})">${L.skipToMatches}</button>`;
     sAlerts.forEach(m=>{
       const si=m.surprise_info;
+      // כל המספרים מ-BANDS בלבד (אפס Elo)
+      const w=si.win_pct, wb=si.win_base, nl=si.notlose_pct;
+      const draw=nl-w, favSeg=100-nl;
+      if(draw<0){ console.warn("surprise: negative draw band, skipping", m.match); return; }  // עקביות — לא מרנדר
+      const M=w/wb;
+      const riseTxt = (M>=1.5) ? L.surpriseRise.replace("{M}", Math.round(M)) : L.surpriseRiseFlat;
       const evTxt = (L.evLevels && L.evLevels[si.evidence]) || si.evidence;
       const gapTxt = si.gap_caveat ? ((L.gapNotes && L.gapNotes[si.gap_caveat]) || si.gap_caveat) : "";
       const cav = gapTxt ? `<div style="color:#f0a020;font-size:.78rem;margin-top:4px">⚠️ ${gapTxt}</div>`:"";
-      h += `<div style="border:1px solid var(--line);border-radius:8px;padding:10px;margin:6px 0;background:#1a1410">`+
-        `<div style="font-weight:600">🔥 ${m.date} · ${m.match}</div>`+
-        `<div style="font-size:.84rem;margin-top:4px">${L.surpriseFav}: <b>${m.fav}</b> · ${L.surpriseDog}: <b>${si.dog}</b></div>`+
-        `<div style="font-size:.84rem">${L.surpriseEvidence}: ${evTxt} (${si.quality_matches})</div>`+
-        `<div style="font-size:.84rem">${L.surpriseWin} ~${si.win_pct}% (${L.surpriseBase} ~${si.win_base}%)</div>`+
+      h += `<div class="scard">`+
+        `<div style="font-weight:600">${L.surpriseFlag} · ${fmtDate(m.date)} · ${m.match}</div>`+
+        // (2) בר 3-פלחים: מאאוטסיידר=win · תיקו=notlose−win · פייבוריט=100−notlose
+        `<div class="slbl" style="color:var(--mut);margin-top:8px"><span>${L.surpriseExpLabel}</span></div>`+
+        `<div class="sbar"><div class="so" style="width:${w}%"></div><div class="sd" style="width:${draw}%"></div><div class="sf" style="width:${favSeg}%"></div></div>`+
+        `<div class="slbl"><span style="color:#f0a020">${si.dog} <b>${w}%</b></span><span>${L.draw} <b>${draw}%</b></span><span>${m.fav} <b>${favSeg}%</b></span></div>`+
+        // (3) קופסת הפתעה
+        `<div class="sbox">`+
+          `<div style="font-size:.82rem;color:var(--mut)">${L.surpriseHeadline.replace("{dog}",si.dog)}</div>`+
+          `<div class="sbig">${w}%</div>`+
+          `<div style="font-size:.82rem;color:#f0a020;margin-bottom:6px">${riseTxt}</div>`+
+          `<div class="srow"><span>${L.surpriseUsual}</span><b>${wb}%</b></div>`+
+          `<div class="smini"><div style="width:${wb}%;height:100%;background:var(--mut)"></div></div>`+
+          `<div class="srow"><span>${L.surpriseHot.replace("{dog}",si.dog)}</span><b style="color:#f0a020">${w}%</b></div>`+
+          `<div class="smini"><div style="width:${w}%;height:100%;background:#f0a020"></div></div>`+
+          `<div style="font-size:.8rem;margin-top:9px">${L.surpriseNotlose.replace("{dog}",si.dog)} <b>${nl}%</b></div>`+
+        `</div>`+
+        // (4) למה · (5) סייג · (6) ביסוס
+        `<div style="font-size:.8rem;color:var(--mut)">${L.surpriseWhy}</div>`+
+        `<div style="color:#f0a020;font-size:.78rem;margin-top:4px">${L.surpriseCaveat.replace("{fav}",m.fav)}</div>`+
+        `<div style="font-size:.76rem;color:var(--mut);margin-top:4px">${L.surpriseEvidence.replace("{n}",si.quality_matches)} (${evTxt})</div>`+
         `${cav}</div>`;
     });
     const sDone=(SURPRISE.completed||[]).filter(m=>m.surprise);
@@ -267,6 +318,7 @@ function render(){
       resultHtml = `<div class="result"><span class="${cls}">${L.result}${p.result} ${label}</span></div>`;
     }
     div.innerHTML = `
+      <div class="mdate">${fmtDate(p.date)}</div>
       <div class="mtop">
         <span class="teams">${p.home} <span style="color:var(--mut)">–</span> ${p.away}</span>
         <span class="verdict ${isCall?'call':'silent'}">${isCall ? (p.fav+" "+pct(p.fp)) : L.silent}</span>
