@@ -97,8 +97,11 @@
   .gladder{margin-top:9px;border-top:1px solid #1c3a38;padding-top:7px}
   .glrow{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:3px 0;color:#bcd}
   .glrow .gll{color:#8fb8b2;font-weight:700;flex:0 0 58px}
-  .gbar{display:flex;height:16px;border-radius:4px;overflow:hidden;margin:2px 0}
+  .gbar{display:flex;flex:1;height:16px;border-radius:4px;overflow:hidden;margin:2px 0}
   .gbar .seg{font-size:10px}
+  .gline{display:flex;align-items:center;gap:6px}
+  .gline .gtag{flex:0 0 44px;font-size:9.5px;font-weight:600;color:#8fb8b2}
+  .gnopx{font-size:10px;font-style:italic;color:#7c9a96;padding:2px 0 2px 50px}
   .ghonesty{font-size:11px;font-weight:600;color:#7c9a96;margin-top:7px}
   /* תיקון 3: שורת-פער-ערך — ירוק מעומעם/מנוקד (לא ירוק-מלא), עם "לא מוכח" */
   .vgap{margin-top:8px;border:1px dashed #2e7d4a;background:#10201a;border-radius:8px;padding:7px 10px;font-size:12.5px;color:#7ec9a0;font-weight:700}
@@ -588,8 +591,11 @@ function goalsHTML(g){
   let ladder=`<div class="gladder"><div class="gfmeta" style="margin:0 0 4px"><b>${L.gLadder}</b></div>`;
   g.lines.forEach(x=>{
     if(x.eo==null && x.mo==null) return;
-    const bars=ouMini(x.eo,x.eu,false)+ouMini(x.mo,x.mu,true);
-    ladder+=`<div class="glrow"><span class="gll">${L.gOver}/${L.gUnder} ${x.line}</span><div style="flex:1">${bars}</div></div>`;
+    let rows='';
+    if(x.eo!=null) rows+=`<div class="gline"><span class="gtag">${L.gEngLbl}</span>${ouMini(x.eo,x.eu,false)}</div>`;
+    if(x.mo!=null) rows+=`<div class="gline"><span class="gtag">${L.gMktLbl}</span>${ouMini(x.mo,x.mu,true)}</div>`;
+    else if(x.eo!=null) rows+=`<div class="gnopx">${L.gNoMkt}</div>`;   // engine-בלבד → הסבר (ניסוח קיים, לא חדש)
+    ladder+=`<div class="glrow"><span class="gll">${L.gOver}/${L.gUnder} ${x.line}</span><div style="flex:1">${rows}</div></div>`;
   });
   ladder+=`</div>`;
   return `<details class="gf"><summary>${L.gfSummary} <span class="gfchev" style="font-size:11px">▾</span></summary>`+
