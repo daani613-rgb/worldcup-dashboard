@@ -95,8 +95,10 @@
   .gfbody{padding:2px 12px 12px}
   .gfmeta{font-size:12.5px;color:#8fb8b2;margin:6px 0 2px}.gfmeta b{color:#bfe6df}
   .gladder{margin-top:9px;border-top:1px solid #1c3a38;padding-top:7px}
-  .glrow{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12.5px;padding:2px 0;color:#bcd}
-  .glrow .gll{color:#8fb8b2;font-weight:700;min-width:54px}
+  .glrow{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:3px 0;color:#bcd}
+  .glrow .gll{color:#8fb8b2;font-weight:700;flex:0 0 58px}
+  .gbar{display:flex;height:16px;border-radius:4px;overflow:hidden;margin:2px 0}
+  .gbar .seg{font-size:10px}
   .ghonesty{font-size:11px;font-weight:600;color:#7c9a96;margin-top:7px}
   /* תיקון 3: שורת-פער-ערך — ירוק מעומעם/מנוקד (לא ירוק-מלא), עם "לא מוכח" */
   .vgap{margin-top:8px;border:1px dashed #2e7d4a;background:#10201a;border-radius:8px;padding:7px 10px;font-size:12.5px;color:#7ec9a0;font-weight:700}
@@ -555,30 +557,39 @@ function fmtTime(iso){try{return new Date(iso).toLocaleTimeString(lang==="he"?"h
 function goalsHTML(g){
   // פאנל-גולים (display-only): engine over/under per-line + שוק (devig) כשקיים. ריק → אין accordion.
   if(!g || !g.lines || !g.lines.length) return '';
-  const L=I18N[lang], OV='#2e9e5b', UN='#5a6472';
+  const L=I18N[lang], OV='#e8950c', UN='#0ca678';   // Over=כתום · Under=טורקיז (market מעומעם דרך .bar.market)
   const main = g.lines.find(x=>x.line===(g.main||'2.5')) || g.lines[0];
-  function ouBar(o,u,ring,side){
+  // בר מחולק Over(שמאל)/Under(ימין), רוחב-לפי-אחוז, האחוז בתוך הסגמנט. isMkt → class market (מעומעם).
+  function ouBar(o,u,ring,side,isMkt){
     if(o==null||u==null) return '';
-    return `<div class="bar"><div class="seg ${side==='o'?ring:''}" style="flex:${o};background:${OV}">${o}%</div>`+
+    return `<div class="bar${isMkt?' market':''}"><div class="seg ${side==='o'?ring:''}" style="flex:${o};background:${OV}">${o}%</div>`+
            `<div class="seg ${side==='u'?ring:''}" style="flex:${u};background:${UN}">${u}%</div></div>`;
   }
-  const engRow = (main.eo!=null)?`<div class="barrow"><div class="barlbl">${L.gEngLbl}<small>${L.gEngSub}</small></div>${ouBar(main.eo,main.eu,'','')}</div>`:'';
+  // בר-סולם דק (engine/market) — אותו דפוס-סגמנטים, גובה קטן יותר
+  function ouMini(o,u,isMkt){
+    if(o==null||u==null) return '';
+    return `<div class="gbar${isMkt?' market':''}"><div class="seg" style="flex:${o};background:${OV}">${o}%</div>`+
+           `<div class="seg" style="flex:${u};background:${UN}">${u}%</div></div>`;
+  }
+  const engRow = (main.eo!=null)?`<div class="barrow"><div class="barlbl">${L.gEngLbl}<small>${L.gEngSub}</small></div>${ouBar(main.eo,main.eu,'','',false)}</div>`:'';
   let mktRow='', fact='';
   if(main.mo!=null && main.eo!=null){
     const gap=main.eo-main.mo, side=(gap>=0)?'o':'u', ag=Math.abs(gap);
     const ring=(ag<LO)?'':((ag<=HI)?'zv':'zc');   // ⭐ שימוש-חוזר בספי 1X2: LO/HI=3/10 · zv=ירוק-ערך · zc=תכלת-בדוק
-    mktRow=`<div class="barrow"><div class="barlbl">${L.gMktLbl}<small>${L.gMktSub}</small></div>${ouBar(main.mo,main.mu,ring,side)}</div>`;
+    mktRow=`<div class="barrow"><div class="barlbl">${L.gMktLbl}<small>${L.gMktSub}</small></div>${ouBar(main.mo,main.mu,ring,side,true)}</div>`;
     const sLbl=(side==='o')?L.gOver:L.gUnder, eV=(side==='o')?main.eo:main.eu, mV=(side==='o')?main.mo:main.mu;
     fact=`<div class="gfmeta">${sLbl} ${main.line}: ${L.gEngLbl} <b>${eV}%</b> ${L.vsShort} ${L.gMktLbl} <b>${mV}%</b> · ${L.gap} ${gap>=0?'+':''}${gap}%</div>`;
   } else {
     fact=`<div class="gfmeta" style="color:#7c9a96">${L.gNoMkt}</div>`;
   }
-  const axis=(main.eo!=null)?`<div class="axis"><span style="flex:${main.eo}">${L.gOver} ${main.line}</span><span style="flex:${main.eu}">${L.gUnder} ${main.line}</span></div>`:'';
+  const axis=(main.eo!=null)?`<div class="axis"><span style="flex:${main.eo};color:${OV}">${L.gOver} ${main.line}</span><span style="flex:${main.eu};color:${UN};text-align:right">${L.gUnder} ${main.line}</span></div>`:'';
   const meta=`<div class="gfmeta">${g.lam!=null?`${L.gLam}: <b>${g.lam}</b>`:''}${g.mls?` · ${L.gLikely}: <b>${g.mls}</b>`:''}</div>`;
+  // סולם-קווים: לכל קו, בר-engine דק (תמיד) + בר-market דק (רק אם יש). דינמי — קווים עם נתון בלבד.
   let ladder=`<div class="gladder"><div class="gfmeta" style="margin:0 0 4px"><b>${L.gLadder}</b></div>`;
   g.lines.forEach(x=>{
-    const e=(x.eo!=null)?`${L.gEngLbl} ${x.eo}%`:'—', mk=(x.mo!=null)?` · ${L.gMktLbl} ${x.mo}%`:'';
-    ladder+=`<div class="glrow"><span class="gll">${L.gOver} ${x.line}</span><span>${e}${mk}</span></div>`;
+    if(x.eo==null && x.mo==null) return;
+    const bars=ouMini(x.eo,x.eu,false)+ouMini(x.mo,x.mu,true);
+    ladder+=`<div class="glrow"><span class="gll">${L.gOver}/${L.gUnder} ${x.line}</span><div style="flex:1">${bars}</div></div>`;
   });
   ladder+=`</div>`;
   return `<details class="gf"><summary>${L.gfSummary} <span class="gfchev" style="font-size:11px">▾</span></summary>`+
