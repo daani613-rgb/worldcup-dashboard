@@ -210,7 +210,7 @@
 </div>
 
 <!-- ===== back-to-top (display-only · נגיש: button אמיתי, aria-label דו-לשוני, ≥44px) ===== -->
-<button id="backToTop" type="button" aria-label="Back to top" onclick="scrollTop()">↑</button>
+<button id="backToTop" type="button" aria-label="Back to top">↑</button>
 
 <script>
 const COL={h:'#3b82f6',d:'#a855f7',a:'#ef4444'};   // תיקון 3: צבעי-האתר-הישן — בית=כחול · תיקו=סגול · חוץ=אדום
@@ -785,10 +785,13 @@ function closeGuide(){document.getElementById('guide-modal').classList.remove('o
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGuide();});
 
 // ===== back-to-top: מופיע אחרי גלילה >400px; מכבד prefers-reduced-motion (WCAG 2.3.3) =====
-function scrollTop(){
+// ⚠️ הקליק נקשר ב-addEventListener (לא inline onclick) — השם 'scrollTop' מתנגש ב-Element.scrollTop;
+//    שם-פונקציה scrollToTop + binding מפורש מבטלים את ההתנגשות.
+function scrollToTop(){
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
 }
+document.getElementById('backToTop').addEventListener('click', scrollToTop);
 window.addEventListener('scroll', ()=>{
   document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
 }, {passive:true});
