@@ -126,6 +126,14 @@
   .brier{font-size:11.5px;color:var(--muted);margin-top:4px}
   .pend{margin-top:11px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
   footer{margin-top:24px;text-align:center;font-size:12px;color:var(--muted)}
+  footer .footer-micro{margin-top:7px;font-size:11.5px;color:var(--muted);line-height:1.7}
+  .disc-link{background:none;border:none;padding:0;margin:0;font:inherit;font-size:11.5px;font-weight:700;
+    color:var(--gold);text-decoration:underline;cursor:pointer}
+  .disc-link:hover{color:#e8b860}
+  .disc-link:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:3px}
+  /* disclaimer modal reuses .guide styles; links + helpline emphasis */
+  .guide .sec a{color:var(--gold);text-decoration:underline;word-break:break-word}
+  .guide .sec a:hover{color:#e8b860}
 
   /* ===== guide modal ===== */
   .modal{position:fixed;inset:0;background:rgba(21,33,46,.55);z-index:50;display:none;
@@ -167,14 +175,14 @@
 </head>
 <body>
 <div class="wrap">
-  <button class="toggle" id="langToggle" onclick="toggleLang()">עב</button>
+  <button class="toggle" id="langToggle" onclick="toggleLang()" data-goatcounter-click="lang-toggle" data-goatcounter-title="Language toggle">עב</button>
   <div class="top">
     <p class="eyebrow" id="eyebrow"></p>
     <h1 id="h1"></h1>
     <p id="intro"></p>
     <p id="subtitle" style="margin:6px 0 0;font-size:12.5px;color:var(--muted);font-weight:600"></p>
     <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-      <button class="guide-btn" id="guideBtn" onclick="openGuide()"></button>
+      <button class="guide-btn" id="guideBtn" onclick="openGuide()" data-goatcounter-click="guide-open" data-goatcounter-title="How to read this page"></button>
       <a class="guide-btn" id="todayBtn" href="#today" style="background:var(--card);color:var(--ink);border:1px solid var(--line);box-shadow:none"></a>
     </div>
   </div>
@@ -199,15 +207,27 @@
   <div class="daylbl" id="daylbl"></div>
   <div class="expl-card" id="surprise-note" style="margin:8px 0 2px;border-inline-start-color:var(--orange);font-size:13px;color:var(--ink2);line-height:1.5"></div>
   <div id="cards"></div>
-  <footer id="footer"></footer>
+  <footer id="footer">
+    <div id="footerTag"></div>
+    <div class="footer-micro"><span id="footerMicro"></span> · <button class="disc-link" id="discBtn" type="button" onclick="openDisc()" data-goatcounter-click="disclaimer-open" data-goatcounter-title="Disclaimer & Privacy"></button></div>
+  </footer>
 </div>
 
 <!-- ===== guide modal ===== -->
 <div class="modal" id="guide-modal" onclick="if(event.target===this)closeGuide()">
-  <div class="modal-card" role="dialog" aria-modal="true">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="guideTitle">
     <div class="modal-head"><span class="mt" id="guideTitle"></span>
       <button class="modal-close" onclick="closeGuide()" aria-label="close">×</button></div>
     <div class="guide" id="guideBody"></div>
+  </div>
+</div>
+
+<!-- ===== disclaimer + privacy modal ===== -->
+<div class="modal" id="disc-modal" onclick="if(event.target===this)closeDisc()">
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="discTitle">
+    <div class="modal-head"><span class="mt" id="discTitle"></span>
+      <button class="modal-close" onclick="closeDisc()" aria-label="close">×</button></div>
+    <div class="guide" id="discBody"></div>
   </div>
 </div>
 
@@ -460,6 +480,24 @@ const GUIDE_HE=`
     <p class="lead"><b>גודל-הפער אינו התשובה — האם יש הסבר הוא התשובה.</b></p></div>
 `;
 
+// ===== disclaimer + privacy (he+en) — exact text from "הצהרות לאתר" §2 + §3 (version B, GoatCounter) =====
+const DISC_EN=`
+  <div class="sec"><div class="ey"><h2>Disclaimer</h2></div>
+    <p>This dashboard and its content are provided <b>for informational and entertainment purposes only</b> and do not constitute financial, investment, legal, tax, or betting advice, nor a recommendation to place any bet or take any action. All probabilities are <b>probabilistic estimates, not certainties</b> — no outcome is guaranteed, and past performance does not guarantee future results. Any decision you make based on this content is <b>at your own risk</b>, and we accept no liability for any loss or damage arising from reliance on it. The content does not take into account your personal circumstances or risk tolerance. We are <b>not a gambling operator, bookmaker, or financial advisor</b>, and we do not accept bets or money. This service is <b>free</b>. Data and market prices are gathered from third-party sources and may be delayed or contain inaccuracies. Use is permitted only if you are <b>18</b> or older, or the legal age of majority/gambling where you live — <b>whichever is higher</b>. You are responsible for ensuring that use and any betting are <b>legal in your jurisdiction</b> and for complying with local law.</p>
+    <p>If gambling is harming you or someone you know, please seek help: <b>US:</b> <a href="https://www.ncpgambling.org" target="_blank" rel="noopener">ncpgambling.org</a> · <b>UK:</b> <a href="https://www.gamcare.org.uk" target="_blank" rel="noopener">gamcare.org.uk</a>.</p></div>
+
+  <div class="sec"><div class="ey"><h2>Privacy</h2></div>
+    <p>This site uses GoatCounter — a privacy-friendly analytics service, <b>no cookies and no personal data</b> — to count visitors and see which pages/links are popular; there is no cross-site tracking. The site is hosted on GitHub Pages; as the host, GitHub may record technical data (such as your IP address) in its server logs, which we cannot access. See GitHub's Privacy Statement: <a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>. Contact: <a href="mailto:qmanagement613@gmail.com">qmanagement613@gmail.com</a>.</p></div>
+`;
+const DISC_HE=`
+  <div class="sec"><div class="ey"><h2>כתב-ויתור</h2></div>
+    <p>הלוח והתכנים בו ניתנים <b>למטרות מידע ובידור בלבד</b>, ואינם מהווים ייעוץ פיננסי, השקעות, משפטי, מס או ייעוץ-הימורים, ואינם המלצה לבצע הימור או פעולה כלשהי. כל ההסתברויות הן <b>אומדנים הסתברותיים, לא ודאויות</b> — אין כל הבטחה לתוצאה, וביצועי-עבר אינם מבטיחים תוצאות-עתידיות. כל החלטה על-בסיס התכנים היא <b>באחריותך הבלעדית</b>, ואיננו אחראים לכל הפסד או נזק שעלול לנבוע מהסתמכות עליהם. התכנים אינם מתחשבים בנסיבותיך-האישיות או ברמת-הסיכון שלך. אנו <b>איננו מפעיל-הימורים, סַפָּר (bookmaker) או יועץ-פיננסי</b>, ואיננו מקבלים הימורים או כספים. השירות <b>חינמי</b>. נתונים ומחירי-שוק נאספים ממקורות-צד-ג' ועלולים להתעכב או לכלול אי-דיוקים. השימוש מותר מגיל <b>18</b> ומעלה, או גיל-הבגירות/ההימורים החוקי במקום-מגוריך — <b>הגבוה מביניהם</b>. אתה אחראי לוודא שהשימוש וכל הימור <b>חוקיים בשיפוט שלך</b> ולציית לחוק המקומי.</p>
+    <p>אם הימורים פוגעים בך או במישהו שאתה מכיר — פנה לעזרה: <b>ארה"ב:</b> <a href="https://www.ncpgambling.org" target="_blank" rel="noopener">ncpgambling.org</a> · <b>בריטניה:</b> <a href="https://www.gamcare.org.uk" target="_blank" rel="noopener">gamcare.org.uk</a>.</p></div>
+
+  <div class="sec"><div class="ey"><h2>פרטיות</h2></div>
+    <p>האתר משתמש ב-GoatCounter — שירות-אנליטיקס ידידותי-פרטיות, <b>ללא קוקיז וללא מידע-אישי</b> — כדי לספור מבקרים ולראות אילו עמודים/קישורים פופולריים; אין מעקב בין-אתרים. האתר מתארח ב-GitHub Pages; כמארח, GitHub עשויה לרשום נתונים-טכניים (כגון כתובת-IP) בלוגי-השרת שלה, שאינם נגישים לנו. ראה את מדיניות-הפרטיות של GitHub: <a href="https://docs.github.com/site-policy/privacy-policies/github-privacy-statement" target="_blank" rel="noopener">GitHub Privacy Statement</a>. ליצירת-קשר: <a href="mailto:qmanagement613@gmail.com">qmanagement613@gmail.com</a>.</p></div>
+`;
+
 const I18N={
  en:{
   toggle:"עב", eyebrow:"World Cup 2026 · Unified board",
@@ -467,6 +505,8 @@ const I18N={
   intro:"For each match: what the engine predicts, what the market prices, what kind of gap exists — and the post-match check.",
   subtitle:"Elo + confidence discipline · predictions for clear favorites only",
   guideBtn:"📖 How to read this page", guideTitle:"📖 How to read this page", guideHTML:GUIDE_EN,
+  discBtn:"Disclaimer & Privacy", discTitle:"Disclaimer & Privacy", discHTML:DISC_EN,
+  footerMicro:"For information and entertainment only · Not betting advice · 18+",
   todayBtn:"↓ Today's matches", backTop:"Back to top",
   accDesc:"When the engine calls a winner — correct <b>78.3%</b> (base engine, on games that ended with a winner, vs 47.9% always-home baseline).",
   acc2Desc:"Including draws — <b>60.4%</b>. The engine never picks a draw (hardest to call), so every draw counts as a miss (22.8% of games).",
@@ -521,6 +561,8 @@ const I18N={
   intro:"על כל משחק: מה המנוע חוזה, מה השוק מתמחר, איזה סוג-פער יש — והבדיקה אחרי המשחק.",
   subtitle:"Elo + משמעת ביטחון · קריאות רק על פייבוריט ברור",
   guideBtn:"📖 איך לקרוא את הדף", guideTitle:"📖 איך לקרוא את הדף", guideHTML:GUIDE_HE,
+  discBtn:"הצהרות ופרטיות", discTitle:"הצהרות ופרטיות", discHTML:DISC_HE,
+  footerMicro:"מידע ובידור בלבד · לא ייעוץ-הימורים · גיל 18+",
   todayBtn:"↓ משחקי היום", backTop:"חזרה לראש הדף",
   accDesc:"כשהמנוע קורא מנצח — צודק ב-<b>78.3%</b> (המנוע הבסיסי, על משחקים שנגמרו עם מנצח, מול בסיס 'תמיד בית' 47.9%).",
   acc2Desc:"כולל תיקו — <b>60.4%</b>. המנוע לעולם לא בוחר תיקו (הכי קשה לניבוי), אז כל תיקו נספר כפספוס (22.8% מהמשחקים).",
@@ -633,7 +675,7 @@ function goalsHTML(g){
     ladder+=`<div class="glrow"><span class="gll">${L.gOver}/${L.gUnder} ${x.line}</span><div style="flex:1">${rows}</div></div>`;
   });
   ladder+=`</div>`;
-  return `<details class="gf"><summary>${L.gfSummary} <span class="gfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>`+
+  return `<details class="gf"><summary data-goatcounter-click="goals-expand" data-goatcounter-title="Goals Over/Under breakdown">${L.gfSummary} <span class="gfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>`+
     `<div class="gfbody"><div class="gfmeta" style="font-weight:700;color:#bfe6df">${L.gMainLbl}</div>`+
     engRow+mktRow+axis+fact+meta+ladder+`<div class="ghonesty">${L.gHonesty}</div></div></details>`;
 }
@@ -669,7 +711,7 @@ function cardHTML(m){
     const grade=L.grade[m.surprise.score]||m.surprise.byForm||'';
     const vg=m.surprise.valueGap;   // תיקון 3: שורת-פער-ערך (תצוגה בלבד · חושב ב-board_build · לא ב-CLV/סיווג)
     const vgRow=vg?`<div class="vgap">${L.vgLabel} ${vg.dog} ${L.vgUnproven}: ${L.vgSurprise} ${vg.sp}% ${L.vsShort} ${L.mktShort} ${vg.mk}% · +${vg.gap}%<small>${L.vgWarn}</small></div>`:'';
-    sf=`<details class="sf"><summary>${L.sfSummary} <span class="sfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>
+    sf=`<details class="sf"><summary data-goatcounter-click="surprise-expand" data-goatcounter-title="Surprise-factor breakdown">${L.sfSummary} <span class="sfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>
       <div class="sfbody">
         <div class="sfmeta">${L.sfByRank}: <b>${m.surprise.byRanking}%</b> · ${L.sfByForm}: <b>${grade}</b></div>
         <div class="barrow"><div class="barlbl">${L.sfBarLbl}<small>${L.sfBarSub}</small></div><div class="bar">${sb}</div></div>
@@ -766,9 +808,14 @@ function applyChrome(){
   document.getElementById('lbl-warn').textContent=L.lblWarn;
   document.getElementById('calib').innerHTML=L.calib;
   document.getElementById('daylbl').textContent=L.daylbl;
-  document.getElementById('footer').textContent=L.footer;
+  document.getElementById('footerTag').textContent=L.footer;
+  document.getElementById('footerMicro').textContent=L.footerMicro;
+  const db=document.getElementById('discBtn');
+  db.textContent=L.discBtn; db.setAttribute('aria-label',L.discBtn);
   document.getElementById('guideTitle').textContent=L.guideTitle;
   document.getElementById('guideBody').innerHTML=L.guideHTML;
+  document.getElementById('discTitle').textContent=L.discTitle;
+  document.getElementById('discBody').innerHTML=L.discHTML;
 }
 
 function render(){
@@ -784,7 +831,9 @@ function toggleLang(){ lang=(lang==='en')?'he':'en'; render(); }
 // ===== modal =====
 function openGuide(){document.getElementById('guide-modal').classList.add('open');document.body.style.overflow='hidden';}
 function closeGuide(){document.getElementById('guide-modal').classList.remove('open');document.body.style.overflow='';}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGuide();});
+function openDisc(){document.getElementById('disc-modal').classList.add('open');document.body.style.overflow='hidden';}
+function closeDisc(){document.getElementById('disc-modal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeGuide();closeDisc();}});
 
 // ===== back-to-top: מופיע אחרי גלילה >400px; מכבד prefers-reduced-motion (WCAG 2.3.3) =====
 // ⚠️ הקליק נקשר ב-addEventListener (לא inline onclick) — השם 'scrollTop' מתנגש ב-Element.scrollTop;
@@ -800,5 +849,7 @@ window.addEventListener('scroll', ()=>{
 
 render();
 </script>
+<!-- analytics: GoatCounter (privacy-friendly, no cookies). Auto-binds clicks on [data-goatcounter-click]. -->
+<script data-goatcounter="https://worldcup613.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </body>
 </html>
