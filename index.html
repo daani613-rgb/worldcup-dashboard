@@ -662,7 +662,10 @@ const isBet=z=>z==='value'||z==='value_big';
 const isCaution=z=>z==='warn'||z==='check';
 function fmtDate(d){const p=String(d).split("-");if(p.length!==3)return d;
   return lang==="he"?(+p[2])+"."+(+p[1]):(+p[1])+"/"+(+p[2]);}   // he: 15.6 (יום.חודש) · en: 6/15 (month/day)
-function fmtTime(iso){try{return new Date(iso).toLocaleTimeString(lang==="he"?"he-IL":"en-GB",{hour:"2-digit",minute:"2-digit"});}catch(e){return "";}}
+function fmtTime(iso){try{return lang==="he"
+  ? new Date(iso).toLocaleTimeString("he-IL",{hour:"2-digit",minute:"2-digit",hour12:false})   // עברית: 24h
+  : new Date(iso).toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit",hour12:true});}  // English: AM/PM
+  catch(e){return "";}}
 // ===== match-filter (display-only) — today reference + day difference =====
 const _n=new Date();
 const TODAY=`${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
