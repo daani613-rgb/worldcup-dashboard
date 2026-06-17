@@ -20,6 +20,14 @@
     border:1px solid var(--line);color:var(--ink);border-radius:8px;padding:5px 11px;
     font-family:inherit;font-size:13px;font-weight:700;z-index:3}
   .toggle:hover{background:#262c38}
+  /* כפתור גלילה-למעלה (display-only · נגיש) — fixed, z-index<modal(50), 44×44 (WCAG 2.5.8), מוסתר עד גלילה */
+  #backToTop{position:fixed;bottom:18px;inset-inline-end:18px;z-index:40;
+    width:44px;height:44px;border-radius:50%;display:none;align-items:center;justify-content:center;
+    background:var(--card);color:var(--ink);border:1px solid var(--line);
+    font-size:20px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.45)}
+  #backToTop.show{display:flex}
+  #backToTop:hover{background:#262c38}
+  #backToTop:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
   .top{padding:8px 4px 14px}
   .eyebrow{font-size:12px;letter-spacing:.13em;color:var(--gold);font-weight:700;margin:0 0 6px}
   h1{font-size:24px;margin:0 0 4px;font-weight:800;letter-spacing:-.01em}
@@ -200,6 +208,9 @@
     <div class="guide" id="guideBody"></div>
   </div>
 </div>
+
+<!-- ===== back-to-top (display-only · נגיש: button אמיתי, aria-label דו-לשוני, ≥44px) ===== -->
+<button id="backToTop" type="button" aria-label="Back to top" onclick="scrollTop()">↑</button>
 
 <script>
 const COL={h:'#3b82f6',d:'#a855f7',a:'#ef4444'};   // תיקון 3: צבעי-האתר-הישן — בית=כחול · תיקו=סגול · חוץ=אדום
@@ -454,7 +465,7 @@ const I18N={
   intro:"For each match: what the engine predicts, what the market prices, what kind of gap exists — and the post-match check.",
   subtitle:"Elo + confidence discipline · predictions for clear favorites only",
   guideBtn:"📖 How to read this page", guideTitle:"📖 How to read this page", guideHTML:GUIDE_EN,
-  todayBtn:"↓ Today's matches",
+  todayBtn:"↓ Today's matches", backTop:"Back to top",
   accDesc:"When the engine calls a winner — correct <b>78.3%</b> (base engine, on games that ended with a winner, vs 47.9% always-home baseline).",
   acc2Desc:"Including draws — <b>60.4%</b>. The engine never picks a draw (hardest to call), so every draw counts as a miss (22.8% of games).",
   brierDesc:"Beyond pick accuracy: the engine's probabilities beat a naive baseline by <b>19–26%</b> (Brier 0.51 vs 0.63, RPS 0.17 vs 0.23). Its draw probability is well-calibrated (23% vs 22.8% actual) — it \"knows\" about draws even though it never picks one.",
@@ -508,7 +519,7 @@ const I18N={
   intro:"על כל משחק: מה המנוע חוזה, מה השוק מתמחר, איזה סוג-פער יש — והבדיקה אחרי המשחק.",
   subtitle:"Elo + משמעת ביטחון · קריאות רק על פייבוריט ברור",
   guideBtn:"📖 איך לקרוא את הדף", guideTitle:"📖 איך לקרוא את הדף", guideHTML:GUIDE_HE,
-  todayBtn:"↓ משחקי היום",
+  todayBtn:"↓ משחקי היום", backTop:"חזרה לראש הדף",
   accDesc:"כשהמנוע קורא מנצח — צודק ב-<b>78.3%</b> (המנוע הבסיסי, על משחקים שנגמרו עם מנצח, מול בסיס 'תמיד בית' 47.9%).",
   acc2Desc:"כולל תיקו — <b>60.4%</b>. המנוע לעולם לא בוחר תיקו (הכי קשה לניבוי), אז כל תיקו נספר כפספוס (22.8% מהמשחקים).",
   brierDesc:"מעבר לדיוק-הבחירה: ההסתברויות של המנוע מנצחות בסיס נאיבי ב-<b>19–26%</b> (Brier 0.51 מול 0.63, RPS 0.17 מול 0.23). הסתברות-התיקו שלו מכוילת היטב (23% מול 22.8% בפועל) — הוא \"יודע\" על תיקו גם כשהוא לא בוחר בו.",
@@ -742,6 +753,7 @@ function applyChrome(){
   document.getElementById('subtitle').textContent=L.subtitle;
   document.getElementById('guideBtn').textContent=L.guideBtn;
   document.getElementById('todayBtn').textContent=L.todayBtn;
+  document.getElementById('backToTop').setAttribute('aria-label', L.backTop);   // aria דו-לשוני
   document.getElementById('hold-lbl').textContent=L.holdLbl;
   document.getElementById('acc-detail').innerHTML=`<div>${L.accDesc}</div><div style="margin-top:4px">${L.acc2Desc}</div><div style="margin-top:4px">${L.brierDesc}</div>`;
   document.getElementById('surprise-note').innerHTML=`<b>${L.surpriseTitle}</b> · ${L.surpriseSub}`;
@@ -771,6 +783,15 @@ function toggleLang(){ lang=(lang==='en')?'he':'en'; render(); }
 function openGuide(){document.getElementById('guide-modal').classList.add('open');document.body.style.overflow='hidden';}
 function closeGuide(){document.getElementById('guide-modal').classList.remove('open');document.body.style.overflow='';}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeGuide();});
+
+// ===== back-to-top: מופיע אחרי גלילה >400px; מכבד prefers-reduced-motion (WCAG 2.3.3) =====
+function scrollTop(){
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({top:0, behavior: reduce ? 'auto' : 'smooth'});
+}
+window.addEventListener('scroll', ()=>{
+  document.getElementById('backToTop').classList.toggle('show', window.scrollY > 400);
+}, {passive:true});
 
 render();
 </script>
