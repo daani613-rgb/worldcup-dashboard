@@ -135,6 +135,20 @@
   .guide .sec a{color:var(--gold);text-decoration:underline;word-break:break-word}
   .guide .sec a:hover{color:#e8b860}
 
+  /* ===== match-filter segment (display-only) ===== */
+  .seg-wrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:6px 4px 2px}
+  .seg-btn{background:var(--card);color:var(--ink2);border:1px solid var(--line);border-radius:999px;
+    padding:6px 13px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  .seg-btn:hover{background:#262c38}
+  .seg-btn.active{background:var(--gold);color:#1a1d24;border-color:var(--gold)}
+  .seg-btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  #dateSel{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;
+    padding:6px 10px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer}
+  #dateSel:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+  .empty-note{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:22px 18px;
+    text-align:center;color:var(--ink2);font-size:14px;font-weight:600;margin:10px 0;line-height:1.6}
+  .flag.today{background:#13251a;color:#7ee2a8}
+
   /* ===== guide modal ===== */
   .modal{position:fixed;inset:0;background:rgba(21,33,46,.55);z-index:50;display:none;
     padding:20px 12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
@@ -205,6 +219,13 @@
   <p class="calib" id="calib"></p>
 
   <div class="daylbl" id="daylbl"></div>
+  <div class="seg-wrap" id="filterBar" role="group">
+    <button class="seg-btn" id="seg-upcoming" type="button" onclick="setView('upcoming')" aria-pressed="true" data-goatcounter-click="filter-upcoming"></button>
+    <button class="seg-btn" id="seg-results" type="button" onclick="setView('results')" aria-pressed="false" data-goatcounter-click="filter-results"></button>
+    <button class="seg-btn" id="seg-date" type="button" onclick="setView('date')" aria-pressed="false" data-goatcounter-click="filter-date"></button>
+    <button class="seg-btn" id="seg-all" type="button" onclick="setView('all')" aria-pressed="false" data-goatcounter-click="filter-all"></button>
+    <select id="dateSel" onchange="onDatePick(this.value)" style="display:none"></select>
+  </div>
   <div class="expl-card" id="surprise-note" style="margin:8px 0 2px;border-inline-start-color:var(--orange);font-size:13px;color:var(--ink2);line-height:1.5"></div>
   <div id="cards"></div>
   <footer id="footer">
@@ -517,6 +538,10 @@ const I18N={
   lblClv:"💚 Value · CLV", lblWarn:"🛑 Caution justified",
   calib:'⚠️ Value is classified by <b>gap size</b> and whether there is an <b>explanation</b>: green=value · red=large-gap-from-engine-error · teal=large-gap-no-explanation (check) · grey=too-small. Full detail — the button above.',
   daylbl:"Matches", footer:"Unified board · call (validated) + value-vs-market by zones (experimental)",
+  segUpcoming:"Upcoming", segResults:"Results", segDate:"By date", segAll:"All",
+  filterAria:"Filter matches", dateAria:"Choose date", badgeToday:"Today",
+  emptyUpcoming:"No upcoming matches right now (rest day).", emptyDate:"No matches on this date.",
+  emptyGeneric:"No matches to show.", emptyCta:"Show results",
   na:"n/a", staked:"staked", silNot:"silences (not counted)", pending:"pending", noCalls:"no calls decided yet",
   side:{h:"Home",d:"Draw",a:"Away"}, conf:["High confidence","Medium confidence","Low confidence"],
   grade:{2:"Low-Med (15%)",3:"Medium (16%)",4:"High (18%)"},
@@ -573,6 +598,10 @@ const I18N={
   lblClv:"💚 ערך · CLV", lblWarn:"🛑 זהירות הצדיקה",
   calib:'⚠️ הערך מסווג לפי <b>גודל-הפער</b> וקיום <b>הסבר</b>: ירוק=ערך · אדום=פער-גדול-מטעות-מנוע · תכלת=פער-גדול-ללא-הסבר (בדוק) · אפור=קטן-מדי. לפירוט מלא — הכפתור למעלה.',
   daylbl:"משחקים", footer:"לוח מאוחד · קריאה (מאומת) + ערך-מול-שוק לפי-אזורים (ניסיוני)",
+  segUpcoming:"קרובים", segResults:"תוצאות", segDate:"לפי תאריך", segAll:"הכל",
+  filterAria:"סינון משחקים", dateAria:"בחירת תאריך", badgeToday:"היום",
+  emptyUpcoming:"אין משחקים קרובים כרגע (יום-מנוחה).", emptyDate:"אין משחקים בתאריך זה.",
+  emptyGeneric:"אין משחקים להצגה.", emptyCta:"הצג תוצאות",
   na:"טרם", staked:"סטאפים", silNot:"שתיקות (לא נספרות)", pending:"ממתינות", noCalls:"טרם הוכרעו קריאות",
   side:{h:"בית",d:"תיקו",a:"חוץ"}, conf:["ביטחון גבוה","ביטחון בינוני","ביטחון נמוך"],
   grade:{2:"מתון (15%)",3:"בינוני (16%)",4:"גבוה (18%)"},
@@ -614,6 +643,7 @@ const I18N={
 };
 
 let lang="en", L=I18N.en;
+let view="upcoming", selDate=null;   // match-filter view state (display-only)
 
 // ===================== helpers =====================
 const pickSide=e=>e.h>=e.a?'h':'a';
@@ -633,6 +663,10 @@ const isCaution=z=>z==='warn'||z==='check';
 function fmtDate(d){const p=String(d).split("-");if(p.length!==3)return d;
   return lang==="he"?(+p[2])+"."+(+p[1]):(+p[1])+"/"+(+p[2]);}   // he: 15.6 (יום.חודש) · en: 6/15 (month/day)
 function fmtTime(iso){try{return new Date(iso).toLocaleTimeString(lang==="he"?"he-IL":"en-GB",{hour:"2-digit",minute:"2-digit"});}catch(e){return "";}}
+// ===== match-filter (display-only) — today reference + day difference =====
+const _n=new Date();
+const TODAY=`${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
+function dayDiff(d){const a=new Date(d+"T00:00:00"),b=new Date(TODAY+"T00:00:00");return Math.round((a-b)/86400000);}
 
 function goalsHTML(g){
   // פאנל-גולים (display-only): engine over/under per-line + שוק (devig) כשקיים. ריק → אין accordion.
@@ -685,6 +719,7 @@ function cardHTML(m){
   const cl=classify(m), z=cl.zone, vs=cl.side, gap=cl.gap;
   const ringCls=isBet(z)?'zv':(z==='warn'?'zw':(z==='check'?'zc':''));
   let flags='';
+  if(dayDiff(m.date)===0) flags+=`<span class="flag today">${L.badgeToday}</span>`;
   if(m.fire)  flags+=`<span class="flag fire">${L.flagFire}</span>`;
   if(m.scale) flags+=`<span class="flag scale">${L.flagScale}</span>`;
   const barEng=['h','d','a'].map(s=>`<div class="seg ${s===pk?'pick':''}" style="flex:${m.eng[s]};background:${COL[s]}">${m.eng[s]}%</div>`).join('');
@@ -808,6 +843,12 @@ function applyChrome(){
   document.getElementById('lbl-warn').textContent=L.lblWarn;
   document.getElementById('calib').innerHTML=L.calib;
   document.getElementById('daylbl').textContent=L.daylbl;
+  document.getElementById('seg-upcoming').textContent=L.segUpcoming;
+  document.getElementById('seg-results').textContent=L.segResults;
+  document.getElementById('seg-date').textContent=L.segDate;
+  document.getElementById('seg-all').textContent=L.segAll;
+  document.getElementById('filterBar').setAttribute('aria-label',L.filterAria);
+  document.getElementById('dateSel').setAttribute('aria-label',L.dateAria);
   document.getElementById('footerTag').textContent=L.footer;
   document.getElementById('footerMicro').textContent=L.footerMicro;
   const db=document.getElementById('discBtn');
@@ -818,13 +859,40 @@ function applyChrome(){
   document.getElementById('discBody').innerHTML=L.discHTML;
 }
 
+// ===== match-filter logic (display-only · renderTracks/KPI stay on the FULL `matches`) =====
+function availDates(){return [...new Set(matches.map(m=>m.date))].sort();}
+function defaultDate(){const ds=availDates();if(ds.includes(TODAY))return TODAY;const fut=ds.filter(d=>d>=TODAY);return fut.length?fut[0]:(ds[ds.length-1]||null);}
+function visibleMatches(){
+  if(view==='results') return matches.filter(m=>m.result);            // all past (decided)
+  if(view==='date')    return matches.filter(m=>m.date===selDate);    // chosen date
+  if(view==='all')     return matches;                                 // no filter
+  return matches.filter(m=>{const d=dayDiff(m.date);return d>=0&&d<=4&&!m.result;});   // upcoming: today..+4, not played
+}
+function emptyHTML(){
+  const msg=view==='date'?L.emptyDate:(view==='upcoming'?L.emptyUpcoming:L.emptyGeneric);
+  const cta=view==='results'?'':`<div style="margin-top:12px"><button class="seg-btn" type="button" onclick="setView('results')">${L.emptyCta}</button></div>`;
+  return `<div class="empty-note">${msg}${cta}</div>`;
+}
+function updateFilterUI(){
+  ['upcoming','results','date','all'].forEach(v=>{const b=document.getElementById('seg-'+v);
+    const on=(v===view);b.classList.toggle('active',on);b.setAttribute('aria-pressed',on?'true':'false');});
+  const sel=document.getElementById('dateSel');
+  sel.style.display=(view==='date')?'':'none';
+  sel.innerHTML=availDates().map(d=>`<option value="${d}"${d===selDate?' selected':''}>${fmtDate(d)}</option>`).join('');
+}
+function setView(v){if(v==='date'&&!selDate)selDate=defaultDate();view=v;render();}
+function onDatePick(v){selDate=v;render();}
+
 function render(){
   L=I18N[lang];
   document.documentElement.lang=lang;
   document.documentElement.dir=(lang==='he')?'rtl':'ltr';
   applyChrome();
-  document.getElementById('cards').innerHTML=matches.map(cardHTML).join('');
-  renderTracks();
+  const vis=visibleMatches();   // filtered subset — card display only
+  const el=document.getElementById('cards');
+  el.innerHTML=vis.length?vis.map(cardHTML).join(''):emptyHTML();
+  renderTracks();               // ⭐ ALWAYS on full `matches` — the filter never touches KPI
+  updateFilterUI();
 }
 function toggleLang(){ lang=(lang==='en')?'he':'en'; render(); }
 
