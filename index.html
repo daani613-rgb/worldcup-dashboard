@@ -633,7 +633,7 @@ function goalsHTML(g){
     ladder+=`<div class="glrow"><span class="gll">${L.gOver}/${L.gUnder} ${x.line}</span><div style="flex:1">${rows}</div></div>`;
   });
   ladder+=`</div>`;
-  return `<details class="gf"><summary>${L.gfSummary} <span class="gfchev" style="font-size:11px">▾</span></summary>`+
+  return `<details class="gf"><summary>${L.gfSummary} <span class="gfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>`+
     `<div class="gfbody"><div class="gfmeta" style="font-weight:700;color:#bfe6df">${L.gMainLbl}</div>`+
     engRow+mktRow+axis+fact+meta+ladder+`<div class="ghonesty">${L.gHonesty}</div></div></details>`;
 }
@@ -669,7 +669,7 @@ function cardHTML(m){
     const grade=L.grade[m.surprise.score]||m.surprise.byForm||'';
     const vg=m.surprise.valueGap;   // תיקון 3: שורת-פער-ערך (תצוגה בלבד · חושב ב-board_build · לא ב-CLV/סיווג)
     const vgRow=vg?`<div class="vgap">${L.vgLabel} ${vg.dog} ${L.vgUnproven}: ${L.vgSurprise} ${vg.sp}% ${L.vsShort} ${L.mktShort} ${vg.mk}% · +${vg.gap}%<small>${L.vgWarn}</small></div>`:'';
-    sf=`<details class="sf"><summary>${L.sfSummary} <span class="sfchev" style="font-size:11px">▾</span></summary>
+    sf=`<details class="sf"><summary>${L.sfSummary} <span class="sfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>
       <div class="sfbody">
         <div class="sfmeta">${L.sfByRank}: <b>${m.surprise.byRanking}%</b> · ${L.sfByForm}: <b>${grade}</b></div>
         <div class="barrow"><div class="barlbl">${L.sfBarLbl}<small>${L.sfBarSub}</small></div><div class="bar">${sb}</div></div>
