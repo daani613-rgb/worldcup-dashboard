@@ -225,8 +225,9 @@
   </div>
   <p class="calib" id="calib"></p>
 
-  <div id="ratings-box" style="margin-top:9px"></div>
+  <div id="today-box" style="margin-top:9px"></div>
   <div id="strongest-box" style="margin-top:9px"></div>
+  <div id="ratings-box" style="margin-top:9px"></div>
 
   <div class="daylbl" id="daylbl"></div>
   <div class="seg-wrap" id="filterBar" role="group">
@@ -590,7 +591,8 @@ const I18N={
   vPregameNote:"CLV closes with the line, before the match. The win is checked after the result.",
   pendNotPlayed:"Not played yet", pendCaut:"the caution will be checked", pendCall:"the call and flags will be checked",
   rkSummary:"🌍 World power ranking", rkIntro:"Ranks all 48 World Cup teams by overall Elo strength (results only) — not day-dependent.",
-  stSummary:"🎯 Strongest calls", stIntro:"Ranks upcoming matches by the engine's pick confidence — strongest to closest.", stEmpty:"No upcoming matches."
+  stSummary:"🎯 Strongest calls", stIntro:"Ranks upcoming matches by the engine's pick confidence — strongest to closest.", stEmpty:"No upcoming matches.",
+  tdSummary:"📅 Today's matches", tdIntro:"Ranks only today's matches by engine confidence.", tdEmpty:"No matches today."
  },
  he:{
   toggle:"EN", eyebrow:"מונדיאל 2026 · לוח מאוחד",
@@ -652,7 +654,8 @@ const I18N={
   vPregameNote:"ה-CLV נסגר עם הקו, לפני המשחק. הזכייה תיבדק אחרי התוצאה.",
   pendNotPlayed:"טרם שוחק", pendCaut:"הזהירות תיבדק", pendCall:"הקריאה והדגלים ייבדקו",
   rkSummary:"🌍 דירוג כוח עולמי", rkIntro:"מדרג את כל 48 נבחרות-המונדיאל לפי חוזק-Elo כללי (לפי תוצאות בלבד) — לא תלוי-יום.",
-  stSummary:"🎯 החזקות ביותר", stIntro:"מדרג את המשחקים הקרובים לפי ביטחון-המנוע בבחירה — מהחזק לצמוד.", stEmpty:"אין משחקים קרובים."
+  stSummary:"🎯 החזקות ביותר", stIntro:"מדרג את המשחקים הקרובים לפי ביטחון-המנוע בבחירה — מהחזק לצמוד.", stEmpty:"אין משחקים קרובים.",
+  tdSummary:"📅 משחקי היום", tdIntro:"מדרג את משחקי-היום בלבד לפי ביטחון-המנוע — מי החזק ביותר היום.", tdEmpty:"אין משחקים היום."
  }
 };
 
@@ -684,6 +687,13 @@ function fmtTime(iso){try{return lang==="he"
 const _n=new Date();
 const TODAY=`${_n.getFullYear()}-${String(_n.getMonth()+1).padStart(2,'0')}-${String(_n.getDate()).padStart(2,'0')}`;
 function dayDiff(d){const a=new Date(d+"T00:00:00"),b=new Date(TODAY+"T00:00:00");return Math.round((a-b)/86400000);}
+// יום-מקומי של משחק לפי הצופה: iso (הרגע-האמיתי, UTC) כשקיים — מתורגם אוטומטית לאזור-הזמן של הדפדפן;
+// fallback ל-date (תאריך-מנוע, ללא-שעה) כשאין iso. פותר את באג-החצות + הפרשי-אזור-זמן.
+function matchLocalDay(m){
+  const inst = (m&&m.iso) ? new Date(m.iso) : new Date(((m&&m.date)||'')+"T00:00:00");
+  return `${inst.getFullYear()}-${String(inst.getMonth()+1).padStart(2,'0')}-${String(inst.getDate()).padStart(2,'0')}`;
+}
+function isToday(m){ return matchLocalDay(m)===TODAY; }
 
 function goalsHTML(g){
   // פאנל-גולים (display-only): engine over/under per-line + שוק (devig) כשקיים. ריק → אין accordion.
@@ -736,7 +746,7 @@ function cardHTML(m){
   const cl=classify(m), z=cl.zone, vs=cl.side, gap=cl.gap;
   const ringCls=isBet(z)?'zv':(z==='warn'?'zw':(z==='check'?'zc':''));
   let flags='';
-  if(dayDiff(m.date)===0) flags+=`<span class="flag today">${L.badgeToday}</span>`;
+  if(isToday(m)) flags+=`<span class="flag today">${L.badgeToday}</span>`;   // יום-מקומי (iso) — תואם לדירוגים
   if(m.fire)  flags+=`<span class="flag fire">${L.flagFire}</span>`;
   if(m.scale) flags+=`<span class="flag scale">${L.flagScale}</span>`;
   const barEng=['h','d','a'].map(s=>`<div class="seg ${s===pk?'pick':''}" style="flex:${m.eng[s]};background:${COL[s]}">${m.eng[s]}%</div>`).join('');
@@ -861,24 +871,47 @@ function renderRatings(){
     `<div class="sfbody"><div class="sfmeta">${L.rkIntro}</div>${rows}</div></details>`;
 }
 
+function renderToday(){
+  const box=document.getElementById('today-box');
+  if(!box) return;
+  // היום-בלבד · client-side · לפי שעון-הצופה (isToday משתמש ב-iso). טרם-הוכרע בלבד.
+  const td=(matches||[]).filter(m=>m && m.eng && !(m.result&&(m.result.outcome||m.result.score)) && isToday(m));
+  const ranked=td.map(m=>{const pk=pickSide(m.eng);
+      return {m, pk, pkP:m.eng[pk], pick:(pk==='h'?m.home:m.away)};})
+    .sort((a,b)=> b.pkP-a.pkP || (Date.parse(a.m.iso||a.m.date+"T00:00:00")-Date.parse(b.m.iso||b.m.date+"T00:00:00")));
+  let rows;
+  if(!ranked.length){                                                    // null-safe ותקף: אין משחקים היום
+    rows=`<div class="rkrow" style="color:var(--muted)">${L.tdEmpty}</div>`;
+  } else {
+    rows=ranked.map((r,i)=>                                              // בלי עמודת-תאריך — כולם היום
+      `<div class="rkrow">`+
+        `<span class="rknum">${i+1}</span>`+
+        `<span class="conf ${confClass(r.pkP)}" title="${confLabel(r.pkP)}">${r.pkP}%</span>`+
+        `<span class="rkteam"><b>${r.pick}</b> <span style="color:var(--muted);font-weight:600">· ${r.m.home} ${L.vs} ${r.m.away}</span></span>`+
+      `</div>`).join('');
+  }
+  box.innerHTML=`<details class="sf"><summary>${L.tdSummary} <span class="sfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>`+
+    `<div class="sfbody"><div class="sfmeta">${L.tdIntro}</div>${rows}</div></details>`;
+}
+
 function renderStrongest(){
   const box=document.getElementById('strongest-box');
   if(!box) return;
   // מסנן-עיקרי: טרם-הוכרע בלבד (אין outcome/score). ⚠️ לא לסנן לפי TODAY/dayDiff — TODAY מחושב
   // ב-build-time (ענן/UTC) והדף עלול להיות מוצג יום-אחרי; משחק שטרם-הוכרע חייב להישאר בסולם וליפול
   // אוטומטית כשמתקבלת תוצאה. dayDiff משמש רק לתווית "היום" וכטאי-ברייקר במיון.
-  const dd=m=>m.date?dayDiff(m.date):Infinity;
+  const inst=m=>Date.parse(m.iso||(m.date?m.date+"T00:00:00":''))||Infinity;   // הרגע-האמיתי לטאי-ברייקר
   const up=(matches||[]).filter(m=>m && m.eng && !(m.result&&(m.result.outcome||m.result.score)));
   const ranked=up.map(m=>{const pk=pickSide(m.eng);                       // 'h'/'a' — בדיוק כמו cardHTML
       return {m, pk, pkP:m.eng[pk], pick:(pk==='h'?m.home:m.away)};})
-    .sort((a,b)=> b.pkP-a.pkP || dd(a.m)-dd(b.m))                        // ביטחון יורד · טאי-ברייקר: המוקדם קודם
+    .sort((a,b)=> b.pkP-a.pkP || inst(a.m)-inst(b.m))                    // ביטחון יורד · טאי-ברייקר: המוקדם (לפי iso) קודם
     .slice(0,12);                                                        // תקרת 12 שורות
   let rows;
   if(!ranked.length){                                                    // null-safe: אין משחקים → שורת-ריק
     rows=`<div class="rkrow" style="color:var(--muted)">${L.stEmpty}</div>`;
   } else {
     rows=ranked.map((r,i)=>{
-      const when=(r.m.date&&dayDiff(r.m.date)===0)?L.badgeToday:(r.m.date?fmtDate(r.m.date):'');  // dayDiff → תווית בלבד
+      const when=isToday(r.m)?L.badgeToday:fmtDate(matchLocalDay(r.m));  // יום-מקומי (iso) → תווית/תאריך מדויק לצופה
       return `<div class="rkrow">`+
         `<span class="rknum">${i+1}</span>`+
         `<span class="conf ${confClass(r.pkP)}" title="${confLabel(r.pkP)}">${r.pkP}%</span>`+
@@ -958,8 +991,9 @@ function render(){
   const el=document.getElementById('cards');
   el.innerHTML=vis.length?vis.map(cardHTML).join(''):emptyHTML();
   renderTracks();               // ⭐ ALWAYS on full `matches` — the filter never touches KPI
-  renderRatings();              // דירוג-כוח עולמי — תלוי-שפה, לא תלוי-יום
-  renderStrongest();            // דירוג-יום "החזקות ביותר" — לפי ביטחון-המנוע, render-only
+  renderToday();                // 📅 משחקי-היום (היום-בלבד, isToday לפי שעון-הצופה)
+  renderStrongest();            // 🎯 החזקות-ביותר (חלון משחקים-קרובים, לפי ביטחון)
+  renderRatings();              // 🌍 דירוג-כוח עולמי — לא תלוי-יום
   updateFilterUI();
 }
 function toggleLang(){ lang=(lang==='en')?'he':'en'; render(); }
