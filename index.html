@@ -592,7 +592,7 @@ const I18N={
   vPriceOk:"✓ price closed in our favor", vWin:"Win", vWinPend:"— awaiting match",
   vPregameNote:"CLV closes with the line, before the match. The win is checked after the result.",
   pendNotPlayed:"Not played yet", pendCaut:"the caution will be checked", pendCall:"the call and flags will be checked",
-  rkSummary:"🌍 World power ranking", rkIntro:"Ranks all 48 World Cup teams by overall Elo strength (results only) — not day-dependent.", rkTrend:"12-mo trend",
+  rkSummary:"🌍 World power ranking", rkIntro:"Ranks all 48 World Cup teams by overall Elo strength (results only) — not day-dependent.", rkTrend:"▲▼ Elo change over the past year — ▲ rising, ▼ falling, – small change (±15). Cumulative over qualifiers and the tournament, not the last 5 matches.", rkTrendTip:"12-mo trend",
   stSummary:"🎯 Strongest calls", stIntro:"Ranks upcoming matches by the engine's pick confidence — strongest to closest.", stEmpty:"No upcoming matches.",
   tdSummary:"📅 Today's matches", tdIntro:"Ranks only today's matches by engine confidence.", tdEmpty:"No matches today."
  },
@@ -655,7 +655,7 @@ const I18N={
   vPriceOk:"✓ מחיר נסגר לטובתנו", vWin:"זכייה", vWinPend:"— ממתין למשחק",
   vPregameNote:"ה-CLV נסגר עם הקו, לפני המשחק. הזכייה תיבדק אחרי התוצאה.",
   pendNotPlayed:"טרם שוחק", pendCaut:"הזהירות תיבדק", pendCall:"הקריאה והדגלים ייבדקו",
-  rkSummary:"🌍 דירוג כוח עולמי", rkIntro:"מדרג את כל 48 נבחרות-המונדיאל לפי חוזק-Elo כללי (לפי תוצאות בלבד) — לא תלוי-יום.", rkTrend:"מגמה · 12 ח׳",
+  rkSummary:"🌍 דירוג כוח עולמי", rkIntro:"מדרג את כל 48 נבחרות-המונדיאל לפי חוזק-Elo כללי (לפי תוצאות בלבד) — לא תלוי-יום.", rkTrend:"▲▼ שינוי ה-Elo בשנה האחרונה — ▲ עלייה, ▼ ירידה, – שינוי קטן (±15). מצטבר על מוקדמות והטורניר, לא 5 המשחקים האחרונים.", rkTrendTip:"מגמה · 12 ח׳",
   stSummary:"🎯 החזקות ביותר", stIntro:"מדרג את המשחקים הקרובים לפי ביטחון-המנוע בבחירה — מהחזק לצמוד.", stEmpty:"אין משחקים קרובים.",
   tdSummary:"📅 משחקי היום", tdIntro:"מדרג את משחקי-היום בלבד לפי ביטחון-המנוע — מי החזק ביותר היום.", tdEmpty:"אין משחקים היום."
  }
@@ -855,7 +855,7 @@ function renderTracks(){
 
 function trendChip(tr){
   if(tr==null) return '';                                   // null-safe: אין trend (קובץ-ישן) → אין chip
-  const tip=L.rkTrend;                                      // dir=ltr — שהחץ+המספר לא יתהפכו ב-RTL
+  const tip=L.rkTrendTip;                                   // tooltip קצר · dir=ltr — שהחץ+המספר לא יתהפכו ב-RTL
   if(tr>=15)  return `<span class="rktrend up"   dir="ltr" title="${tip}">▲+${tr}</span>`;
   if(tr<=-15) return `<span class="rktrend down" dir="ltr" title="${tip}">▼${tr}</span>`;
   return `<span class="rktrend flat" dir="ltr" title="${tip}">–</span>`;   // dead-zone ±15 → רעש
@@ -877,7 +877,7 @@ function renderRatings(){
     rows+=`<div class="rkrow"><span class="rknum">${i+1}</span><span class="rkteam">${t.team}</span><span class="rkelo">${t.elo}</span>${trendChip(t.trend)}</div>`;
   });
   box.innerHTML=`<details class="sf"><summary>${L.rkSummary} <span class="sfchev" aria-hidden="true" style="font-size:11px">▾</span></summary>`+
-    `<div class="sfbody"><div class="sfmeta">${L.rkIntro} · ▲▼ ${L.rkTrend}</div>${rows}</div></details>`;
+    `<div class="sfbody"><div class="sfmeta">${L.rkIntro}<br>${L.rkTrend}</div>${rows}</div></details>`;
 }
 
 function renderToday(){
